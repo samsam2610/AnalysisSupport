@@ -3,7 +3,7 @@ import numpy as np
 import os
 from deeplabcut.utils import auxiliaryfunctions
 
-def setConfig_ContinueTraining(path_config_file, trainingsetindex):
+def setConfig_ContinueTraining(path_config_file, trainingsetindex=0):
     cfg = auxiliaryfunctions.read_config(path_config_file)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     trainingsetindex = 0
