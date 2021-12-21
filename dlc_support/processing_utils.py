@@ -26,9 +26,12 @@ class ProcessVideoList:
 
             videos = self.getListOfVideos([folder], videotype)
             for video in videos:
-                processingStatus = self.processingData[str(Path(video).stem)]
-                if processingStatus == None:
+                videoName = str(Path(video).stem)
+                if videoName in self.processingData:
+                    processingStatus = self.processingData[str(Path(video).stem)]
+                else:
                     processingStatus = False
+                    self.writeVideoProcessingStatus(dataFile, video)
                 
                 self.videoList.append(VideoData(video, videoProcessingStatus=processingStatus))
 
@@ -81,6 +84,15 @@ class ProcessVideoList:
                         status = True
 
                     self.processingData[rows[0]] = status
+        
+    def writeVideoProcessingStatus(self, dataFile, video):
+        with open(dataFile, 'w') as csv_file:
+            csvwriter = csv.writer(csv_file)
+            csvwriter.writerow(self.fields)
+            videofolder = str(Path(video).parents[0])
+            videoName = str(Path(video).stem)
+
+            csvwriter.writerows([[videoName, 0]])
 
     def getListofUnprocessedVideos(self):
         return [self.videoList[i].videoPath for i in range(len(self.videoList)) if self.videoList[i].videoProcessingStatus == False]
