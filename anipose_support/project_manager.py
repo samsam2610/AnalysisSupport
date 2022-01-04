@@ -2,49 +2,99 @@ import os
 import csv
 from pathlib import Path
 import glob
+import toml
 
-videofile_pathlist = ['/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat i0/vids',
-                       '/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat-e/12-6/vids',
-                       '/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat-e/vids/11-6']
+DEFAULT_CONFIG = {
+    'video_extension': 'avi',
+    'calibration': {
+        'animal_calibration': False,
+        'calibration_init': None,
+        'fisheye': False
+    },
+    'manual_verification': {
+        'manually_verify': False
+    },
+    'triangulation': {
+        'ransac': False,
+        'optim': False,
+        'scale_smooth': 2,
+        'scale_length': 2,
+        'scale_length_weak': 1,
+        'reproj_error_threshold': 5,
+        'score_threshold': 0.8,
+        'n_deriv_smooth': 3,
+        'constraints': [],
+        'constraints_weak': []
+    },
+    'pipeline': {
+        'videos_raw': 'videos-raw',
+        'pose_2d': 'pose-2d',
+        'pose_2d_filter': 'pose-2d-filtered',
+        'pose_2d_projected': 'pose-2d-proj',
+        'pose_3d': 'pose-3d',
+        'pose_3d_filter': 'pose-3d-filtered',
+        'videos_labeled_2d': 'videos-labeled',
+        'videos_labeled_2d_filter': 'videos-labeled-filtered',
+        'calibration_videos': 'calibration',
+        'calibration_results': 'calibration',
+        'videos_labeled_3d': 'videos-3d',
+        'videos_labeled_3d_filter': 'videos-3d-filtered',
+        'angles': 'angles',
+        'summaries': 'summaries',
+        'videos_combined': 'videos-combined',
+        'videos_compare': 'videos-compare',
+        'videos_2d_projected': 'videos-2d-proj',
+    },
+    'filter': {
+        'enabled': False,
+        'type': 'medfilt',
+        'medfilt': 13,
+        'offset_threshold': 25,
+        'score_threshold': 0.05,
+        'spline': True,
+        'n_back': 5,
+        'multiprocessing': False
+    },
+    'filter3d': {
+        'enabled': False
+    }
+}
 
 class ProjectManager:
-    def __init__(self, videofile_pathList, videotype='.avi', cam_names=['cam1', 'cam2'], calib_name ='calib') -> None:
-        self.videoList = []
-        self.videotype = videotype
-        self.cam_names = cam_names
-        self.calib_names = calib_name
-        self.test = 2
-        for folder in videofile_pathList:
-            videos = self.get_camerawise_videos(folder)
-            for video in videos:
-                self.videoList.append(video)
+    def __init__(self, project_path, videos_pair, videos_calib, config=None) -> None:
+        self.project_path = project_path
+        self.videos_pair = videos_pair
+        self.set_videos_calib = videos_calib
+        self.config = self.load_config(config)
+        self.dump_config(self.config)
 
-    def get_camerawise_videos(self, path):
-        # Find videos only specific to the cam names
-        videopair_list = []
-        videos = [
-            glob.glob(os.path.join(path, str(self.cam_names[i] + "*" + self.videotype)))
-            for i in range(len(self.cam_names))
-        ]
-        videos = [y for x in videos for y in x]
+    def load_config(self, fname):
+        if fname is None:
+            fname = 'config.toml'
 
-        videomatch_list = videos.copy()
-        videomatch_list = list(map(lambda x: x.replace(self.cam_names[0],'').replace(self.cam_names[1],''), videomatch_list))
-        videotail_list = {x for x in videomatch_list if videomatch_list.count(x) > 1}
-        videotail_list = [os.path.basename(x) for x in videotail_list]
-
-        videospair_list = [
-            
-            [os.path.join(path, str(self.cam_names[i] + videotail_list[x]))
-            for i in range(len(self.cam_names))]
-            for x in range(len(videotail_list))
-        ]
-
-        return videospair_list
-
-        # Exclude the labeled video files
-        if "." in self.videotype:
-            file_to_exclude = str("labeled" + self.videotype)
+        if os.path.exists(fname):
+            config = toml.load(fname)
         else:
-            file_to_exclude = str("labeled." + self.videotype)
-        pass
+            config = dict()
+
+        config['path'] = self.project_path
+
+        if 'project' not in config:
+            config['project'] = os.path.basename(config['path'])
+
+        for k, v in DEFAULT_CONFIG.items():
+            if k not in config:
+                config[k] = v
+            elif isinstance(v, dict): # handle nested defaults
+                for k2, v2 in v.items():
+                    if k2 not in config[k]:
+                        config[k][k2] = v2
+
+        return config
+    
+    def dump_config(self, config):
+        fname = 'config.toml'
+        # toml_string = toml.dumps(config)
+        fpath = os.path.join(self.project_path, fname)
+        with open(fpath, "w") as toml_file:
+            toml.dump(config, toml_file)
