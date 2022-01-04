@@ -2,12 +2,11 @@
 import os
 import csv
 from pathlib import Path
-
-videofile_pathlist = ['/Volumes/GoogleDrive/My Drive/Rat/SCI tests/Julie/07292021Julie',
-                      '/Volumes/GoogleDrive/My Drive/Rat/SCI tests/Julie/08222021Julie']
  
 class VideoData:
-    def __init__(self, video, videoProcessingStatus=False):
+    def __init__(self,
+                 video,
+                 videoProcessingStatus=False):
         self.videoName = str(Path(video).stem)
         self.videoFolder = str(Path(video).parents[0])
         self.videoProcessingStatus = videoProcessingStatus
@@ -15,10 +14,14 @@ class VideoData:
 
 class ProcessVideoList:
 
-    def __init__(self, videofile_pathList, videotype='.avi'):
+    def __init__(self,
+                 videofile_pathList,
+                 videotype='.avi',
+                 fields=['Video', 'Good analysis (1 true/0 false)']):
+
         self.videoList = []
         self.processingData = {}
-        self.fields = ['Video', 'Good analysis (1 true/0 false)'] 
+        self.fields = fields 
 
         for folder in videofile_pathList:
             dataFile = os.path.join(folder, "analysis-status.csv")
@@ -68,7 +71,9 @@ class ProcessVideoList:
                 Videos = [
                     v
                     for v in videos
-                    if os.path.isfile(v) and "_labeled." not in v and "_full." not in v
+                    if os.path.isfile(v)
+                    and "_labeled." not in v
+                    and "_full." not in v
                 ]
         return Videos
     
