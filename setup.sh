@@ -1,3 +1,4 @@
+#!/bin/bash
 pip install deeplabcut --quiet
 pip install aniposelib --quiet
 pip install anipose --quiet 
