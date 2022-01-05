@@ -11,9 +11,7 @@ setup(
     # Needed for dependencies
     install_requires=['numpy',
                       'opencv-contrib-python'],
-    entry_points={
-    'console_scripts': ['setup_package = setup_package:main']
-    },
+    scripts=['setup_package'],
     # *strongly* suggested for sharing
     version='0.1',
     description='Support functions for deeplabcut and anipose',
