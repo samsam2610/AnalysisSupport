@@ -6,10 +6,24 @@ import toml
 
 DEFAULT_CONFIG = {
     'video_extension': 'avi',
+    'nesting': 1,
     'calibration': {
         'animal_calibration': False,
         'calibration_init': None,
-        'fisheye': False
+        'fisheye': False,
+
+        'board_type': "charuco",
+        'board_size': [11, 8],
+        'board_marker_bits': 4,
+
+        'board_marker_dict_number': 50, # number of markers in dictionary, if aruco/charuco
+
+        'board_marker_length': 18.75, # length of marker side (mm)
+
+        # If aruco, length of marker separation
+        # board_marker_separation_length = 1 # mm
+
+        'board_square_side_length': 25 #  If charuco or checkerboard, square side length mm
     },
     'manual_verification': {
         'manually_verify': False
@@ -24,7 +38,8 @@ DEFAULT_CONFIG = {
         'score_threshold': 0.8,
         'n_deriv_smooth': 3,
         'constraints': [],
-        'constraints_weak': []
+        'constraints_weak': [],
+        'cam_regex': 'cam([1-9])',
     },
     'pipeline': {
         'videos_raw': 'videos-raw',
@@ -64,8 +79,11 @@ class ProjectManager:
     def __init__(self, project_path, videos_pair, videos_calib, config=None) -> None:
         self.project_path = project_path
         self.videos_pair = videos_pair
-        self.set_videos_calib = videos_calib
+        self.videos_calib = videos_calib
         self.config = self.load_config(config)
+        self.process_calibration(self.config)
+        _ = self.dump_config(self.config)
+
         self.dump_config(self.config)
 
     def load_config(self, fname):
@@ -98,3 +116,10 @@ class ProjectManager:
         fpath = os.path.join(self.project_path, fname)
         with open(fpath, "w") as toml_file:
             toml.dump(config, toml_file)
+
+    def process_calibration(self, config):
+        from anipose.calibrate import calibrate_all
+        calibrate_all(config)
+    
+
+

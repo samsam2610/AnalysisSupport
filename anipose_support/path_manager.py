@@ -47,9 +47,27 @@ class PathManager:
 
         return videospair_list
 
-    def get_calib_videos(self, path):
+    def get_calib_videos(self, path, calib_foldername='calibration'):
         videos = [
             glob.glob(os.path.join(path, str("*" + self.calib_names + "*" + self.videotype)))
         ]
         videos = [y for x in videos for y in x]
+        calib_path = os.path.join(path, calib_foldername)
+
+        if len(videos) > 0:
+            import shutil
+
+            if not os.path.exists(calib_path):
+                os.makedirs(calib_path)
+
+            if os.path.exists(calib_path):
+                for calib_video in videos:
+                    shutil.move(calib_video, calib_path)
+        
+        else:
+            videos = [
+                glob.glob(os.path.join(calib_path, str("*" + self.calib_names + "*" + self.videotype)))
+            ]
+            videos = [y for x in videos for y in x]
+
         return videos
