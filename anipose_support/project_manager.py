@@ -81,10 +81,8 @@ class ProjectManager:
         self.videos_pair = videos_pair
         self.videos_calib = videos_calib
         self.config = self.load_config(config)
-        self.process_calibration(self.config)
-        _ = self.dump_config(self.config)
-
         self.dump_config(self.config)
+        self.process_calibration(self.config)
 
     def load_config(self, fname):
         if fname is None:
@@ -120,7 +118,7 @@ class ProjectManager:
     def process_calibration(self, config=None):
         if config is None:
             config = self.config
-            
+
         from anipose.calibrate import calibrate_all
         try:
             calibrate_all(config)

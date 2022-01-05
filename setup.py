@@ -9,7 +9,9 @@ setup(
     # Needed to actually package something
     packages=['anipose_support', 'dlc_support'],
     # Needed for dependencies
-    install_requires=['numpy'],
+    install_requires=['numpy',
+                      'opencv-contrib-python'],
+    scripts=['setup.sh'],
     # *strongly* suggested for sharing
     version='0.1',
     description='Support functions for deeplabcut and anipose',
