@@ -1,1 +1,1 @@
-from setup_package import *
+from setup_package.setup_package import *
