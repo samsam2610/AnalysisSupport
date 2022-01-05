@@ -13,7 +13,7 @@ setup(
                       'opencv-contrib-python'],
         entry_points={
         'console_scripts': [
-            'setup_package = setup_package:setup_package',
+            'setup_package = setup_package:main',
         ],
     },
     # *strongly* suggested for sharing
