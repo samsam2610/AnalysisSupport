@@ -12,7 +12,7 @@ def uninstall(package):
 def install_upgrade(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", package, "--quiet"])
 
-if __name__ == '__main__':
+def main():
     print("Installing and uninstalling packages")
     print("Installing DeepLabCut")
     install("deeplabcut")
@@ -32,3 +32,6 @@ if __name__ == '__main__':
     install("vtk==8.1.2")
     install("mayavi")
     print("Done!!")
+    
+if __name__ == '__main__':
+    main()
