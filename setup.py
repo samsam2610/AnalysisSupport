@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     # Needed to silence warnings (and to be a worthwhile package)
@@ -7,7 +7,7 @@ setup(
     author='Sam Tran',
     author_email='quocsam93@gmail.com',
     # Needed to actually package something
-    packages=['anipose_support', 'dlc_support'],
+    packages=find_packages(),
     # Needed for dependencies
     install_requires=['numpy',
                       'opencv-contrib-python'],
