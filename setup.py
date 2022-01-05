@@ -11,10 +11,8 @@ setup(
     # Needed for dependencies
     install_requires=['numpy',
                       'opencv-contrib-python'],
-        entry_points={
-        'console_scripts': [
-            'setup_package = setup_package:main',
-        ],
+    entry_points={
+    'console_scripts': ['setup_package = setup_package:main']
     },
     # *strongly* suggested for sharing
     version='0.1',
