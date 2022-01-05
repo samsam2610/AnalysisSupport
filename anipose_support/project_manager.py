@@ -117,9 +117,15 @@ class ProjectManager:
         with open(fpath, "w") as toml_file:
             toml.dump(config, toml_file)
 
-    def process_calibration(self, config):
+    def process_calibration(self, config=None):
+        if config is None:
+            config = self.config
+            
         from anipose.calibrate import calibrate_all
-        calibrate_all(config)
+        try:
+            calibrate_all(config)
+        except ValueError:
+            pass
     
 
 
