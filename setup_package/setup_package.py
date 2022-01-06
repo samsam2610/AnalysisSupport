@@ -12,7 +12,17 @@ def uninstall(package):
 def install_upgrade(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", package, "--quiet"])
 
-def main():
+def project_2d():
+    print("Installing and uninstalling packages")
+    print("Installing DeepLabCut")
+    install("deeplabcut")
+    print("Fixing opencv-python issues")
+    uninstall("opencv-python")
+    uninstall("opencv-contrib-python")
+    install("opencv-contrib-python")
+    print("Done!!")
+
+def project_3d():
     print("Installing and uninstalling packages")
     print("Installing DeepLabCut")
     install("deeplabcut")
@@ -26,7 +36,6 @@ def main():
     uninstall("opencv-python")
     uninstall("opencv-contrib-python")
     install("opencv-contrib-python")
-
 
     uninstall("mayavi")
     install("vtk==8.1.2")
