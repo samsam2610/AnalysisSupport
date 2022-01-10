@@ -123,6 +123,7 @@ class ProjectManager:
         try:
             calibrate_all(config)
         except ValueError:
+            print('Calibration errors')
             pass
     
 
