@@ -23,14 +23,14 @@ DEFAULT_CONFIG = {
         # If aruco, length of marker separation
         # board_marker_separation_length = 1 # mm
 
-        'board_square_side_length': 25 #  If charuco or checkerboard, square side length mm
+        'board_square_side_length': 25, #  If charuco or checkerboard, square side length mm
     },
     'manual_verification': {
         'manually_verify': False
     },
     'triangulation': {
         'ransac': False,
-        'optim': False,
+        'optim': True,
         'scale_smooth': 2,
         'scale_length': 2,
         'scale_length_weak': 1,
@@ -39,7 +39,7 @@ DEFAULT_CONFIG = {
         'n_deriv_smooth': 3,
         'constraints': [],
         'constraints_weak': [],
-        'cam_regex': 'cam([1-9])',
+        'cam_regex': "cam([1-9])",
     },
     'pipeline': {
         'videos_raw': 'videos-raw',
