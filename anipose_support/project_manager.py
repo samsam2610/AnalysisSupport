@@ -120,6 +120,7 @@ class ProjectManager:
             config = self.config
 
         from anipose.calibrate import calibrate_all
+        calibrate_all(config)
         try:
             calibrate_all(config)
         except Exception as e:
