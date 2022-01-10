@@ -122,8 +122,9 @@ class ProjectManager:
         from anipose.calibrate import calibrate_all
         try:
             calibrate_all(config)
-        except ValueError:
+        except Exception as e:
             print('Calibration errors')
+            print(e)
             pass
     
 
