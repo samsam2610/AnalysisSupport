@@ -28,7 +28,7 @@ def project_3d():
     install("deeplabcut")
     print("Installing Anipose")
     install("aniposelib")
-    install("anipose")
+    install("anipose==0.8.1")
     print("Installing ffmpeg and app tools")
     install("ffmpeg")
     install_upgrade("apptools")
