@@ -19,11 +19,15 @@ class PathManager:
         self.test = 2
         for folder in videofile_pathList:         
             videos = self.get_camerawise_videos(folder)
-            videos_calib = self.get_calib_videos(folder)
+            videos_calib, calib_path = self.get_calib_videos(folder)
 
             for video in videos:
                 if set(videos_calib) != set(video):
-                    currentProject = ProjectManager(folder, videos_pair=video, videos_calib=videos_calib)
+                    currentProject = ProjectManager(folder,
+                                                    cam_names=cam_names,
+                                                    videos_pair=video,
+                                                    videos_calib=videos_calib,
+                                                    calib_path=calib_path)
                     self.projectList.append(currentProject)
 
     def get_camerawise_videos(self, path):
@@ -70,4 +74,4 @@ class PathManager:
             ]
             videos = [y for x in videos for y in x]
 
-        return videos
+        return videos, calib_path

@@ -3,6 +3,9 @@ import sys
 import psycopg2
 from psycopg2.extensions import AsIs
 
+def randomFunction():
+    pass
+
 class MyDataBase:
     def __init__(self, db="treschdeeplabcut", user="sam", password="postgres"):
         self.conn = psycopg2.connect(database=db, user=user, password=password)

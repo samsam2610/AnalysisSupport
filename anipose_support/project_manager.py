@@ -3,6 +3,11 @@ import csv
 from pathlib import Path
 import glob
 import toml
+import numpy as np
+from aniposelib.boards import CharucoBoard, Checkerboard
+from aniposelib.cameras import Camera, CameraGroup
+from aniposelib.utils import load_pose2d_fnames
+
 
 DEFAULT_CONFIG = {
     'video_extension': 'avi',
@@ -76,13 +81,27 @@ DEFAULT_CONFIG = {
 }
 
 class ProjectManager:
-    def __init__(self, project_path, videos_pair, videos_calib, config=None) -> None:
+    def __init__(self,
+                 project_path,
+                 cam_names,
+                 videos_pair,
+                 videos_calib,
+                 calib_path,
+                 config=None) -> None:
+
         self.project_path = project_path
         self.videos_pair = videos_pair
         self.videos_calib = videos_calib
+        self.calib_path = calib_path
+        self.cam_names = cam_names
         self.config = self.load_config(config)
         self.dump_config(self.config)
-        self.process_calibration(self.config)
+        self.videos_result = []
+
+        self.cgroup = self.check_calibration(self.config)
+
+        self.create_pose_dict() # create video dict with cam names
+        self.pose2d_fnames = load_pose2d_fnames(self.videos_result, self.cam_names)
 
     def load_config(self, fname):
         if fname is None:
@@ -115,18 +134,95 @@ class ProjectManager:
         with open(fpath, "w") as toml_file:
             toml.dump(config, toml_file)
 
+    def check_calibration(self, config=None):
+        if config is None:
+            config = self.config
+
+        calib_file = glob.glob(os.path.join(self.calib_path, str("calibration.toml")))
+
+        if os.path.exists(calib_file):
+            cgroup = CameraGroup.load(calib_file)
+        else:
+            print('Calibration file was not found. Calibrating using available videos')
+            board = CharucoBoard(config)
+            cgroup = CameraGroup.from_names(self.cam_names)
+
+            error, all_rows = cgroup.calibrate_videos(self.videos_calib, board)
+            cgroup.dump(calib_file)
+            print('Done calibration. File saved!')
+
+        return cgroup
+
     def process_calibration(self, config=None):
         if config is None:
             config = self.config
 
         from anipose.calibrate import calibrate_all
-        calibrate_all(config)
         try:
             calibrate_all(config)
+            print('Calibration file was created')
         except Exception as e:
             print('Calibration errors')
             print(e)
             pass
-    
+
+    def process_triangulate(self, d=None):
+        if d is None:
+            d = self.pose2d_fnames
+
+        score_threshold = 0.5
+
+        n_cams, n_points, n_joints, _ = d['points'].shape
+        points = d['points']
+        scores = d['scores']
+
+        bodyparts = d['bodyparts']
+
+        # remove points that are below threshold
+        points[scores < score_threshold] = np.nan
+
+        points_flat = points.reshape(n_cams, -1, 2)
+        scores_flat = scores.reshape(n_cams, -1)
+
+        p3ds_flat = cgroup.triangulate(points_flat, progress=True)
+        reprojerr_flat = cgroup.reprojection_error(p3ds_flat, points_flat, mean=True)
+
+        p3ds = p3ds_flat.reshape(n_points, n_joints, 3)
+        reprojerr = reprojerr_flat.reshape(n_points, n_joints)
+
+        return p3ds, reprojerr
+
+    def get_calibration_board(config):
+        calib = config['calibration']
+
+        board_size = calib['board_size']
+        board_type = calib['board_type'].lower()
+
+        if board_type == 'aruco':
+            raise NotImplementedError("aruco board is not implemented with the current pipeline")
+        elif board_type == 'charuco':
+            board = CharucoBoard(
+                board_size[0], board_size[1],
+                calib['board_square_side_length'],
+                calib['board_marker_length'],
+                calib['board_marker_bits'],
+                calib['board_marker_dict_number'])
+        elif board_type == 'checkerboard':
+            board = Checkerboard(board_size[0], board_size[1],
+                                 calib['board_square_side_length'])
+        else:
+            raise ValueError("board_type should be one of "
+                             "'aruco', 'charuco', or 'checkerboard' not '{}'".format(
+                board_type))
+
+        return board
+
+    def create_pose_dict(self):
+        videos = [
+            glob.glob(os.path.join(self.videos_pair[i].replace('.avi', '') + "*" + ".h5"))
+            for i in range(len(self.videos_pair))
+        ]
+        videos = [y for x in videos for y in x]
+        self.videos_result = dict(zip(self.cam_names, videos))
 
 
