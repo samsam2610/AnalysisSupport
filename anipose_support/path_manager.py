@@ -17,11 +17,19 @@ class PathManager:
         self.cam_names = cam_names
         self.calib_names = calib_name
         self.test = 2
+
+        print('\nInitializing project path list ...')
         for folder in videofile_pathList:         
             videos = self.get_camerawise_videos(folder)
             videos_calib, calib_path = self.get_calib_videos(folder)
-
+            print('\nCurrent folder: ')
+            print(folder)
+            print('List of calib videos: ')
+            print(videos_calib)
             for video in videos:
+                if len(videos_calib) == 0:
+                    pass
+
                 if set(videos_calib) != set(video):
                     currentProject = ProjectManager(folder,
                                                     cam_names=cam_names,
@@ -30,6 +38,9 @@ class PathManager:
                                                     calib_path=calib_path)
                     self.projectList.append(currentProject)
 
+            print('\nA project was found and added!')
+
+        print('\nTotal processing projects are: ' + str(len(self.projectList)))
     def get_camerawise_videos(self, path):
         # Find videos only specific to the cam names
         videos = [
@@ -56,6 +67,7 @@ class PathManager:
             glob.glob(os.path.join(path, str("*" + self.calib_names + "*" + self.videotype)))
         ]
         videos = [y for x in videos for y in x]
+
         calib_path = os.path.join(path, calib_foldername)
 
         if len(videos) > 0:

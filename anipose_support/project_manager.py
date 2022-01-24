@@ -101,7 +101,7 @@ class ProjectManager:
         self.cgroup = self.check_calibration(self.config)
 
         self.create_pose_dict() # create video dict with cam names
-        self.pose2d_fnames = load_pose2d_fnames(self.videos_result, self.cam_names)
+        self.pose2d_fnames = load_pose2d_fnames(self.videos_result)
 
     def load_config(self, fname):
         if fname is None:
@@ -138,15 +138,17 @@ class ProjectManager:
         if config is None:
             config = self.config
 
-        calib_file = glob.glob(os.path.join(self.calib_path, str("calibration.toml")))
-        print(calib_file)
-        if os.path.exists(calib_file):
-            cgroup = CameraGroup.load(calib_file)
-        else:
-            print('Calibration file was not found. Calibrating using available videos')
-            board = CharucoBoard(config)
-            cgroup = CameraGroup.from_names(self.cam_names)
+        calib_file = os.path.join(self.calib_path, str("calibration.toml"))
 
+        if os.path.exists(calib_file):
+            print('\nCalibration file was found. Loading calibrated file ...')
+            cgroup = CameraGroup.load(calib_file)
+
+            print('Done calibration loaded!')
+        else:
+            print('\nCalibration file was not found. Calibrating using available videos ...')
+            board = self.get_calibration_board(config)
+            cgroup = CameraGroup.from_names(self.cam_names)
             error, all_rows = cgroup.calibrate_videos(self.videos_calib, board)
             cgroup.dump(calib_file)
             print('Done calibration. File saved!')
@@ -192,7 +194,7 @@ class ProjectManager:
 
         return p3ds, reprojerr
 
-    def get_calibration_board(config):
+    def get_calibration_board(self, config):
         calib = config['calibration']
 
         board_size = calib['board_size']
@@ -223,6 +225,6 @@ class ProjectManager:
             for i in range(len(self.videos_pair))
         ]
         videos = [y for x in videos for y in x]
-        self.videos_result = dict(zip(self.cam_names, videos))
+        self.videos_result = dict(zip(self.cgroup.get_names(), videos))
 
 
