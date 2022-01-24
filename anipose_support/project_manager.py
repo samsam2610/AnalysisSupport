@@ -139,7 +139,7 @@ class ProjectManager:
             config = self.config
 
         calib_file = glob.glob(os.path.join(self.calib_path, str("calibration.toml")))
-
+        print(calib_file)
         if os.path.exists(calib_file):
             cgroup = CameraGroup.load(calib_file)
         else:
