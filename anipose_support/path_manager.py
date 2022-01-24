@@ -20,27 +20,62 @@ class PathManager:
 
         print('\nInitializing project path list ...')
         for folder in videofile_pathList:         
-            videos = self.get_camerawise_videos(folder)
+            videos_pair, videos_tail = self.get_camerawise_videos(folder)
             videos_calib, calib_path = self.get_calib_videos(folder)
             print('\nCurrent folder: ')
             print(folder)
             print('List of calib videos: ')
             print(videos_calib)
-            for video in videos:
+
+            print('\nFinding video pairs associated with this calib videos ...')
+            for idx, video in enumerate(videos_pair):
                 if len(videos_calib) == 0:
-                    pass
+                    continue
 
                 if set(videos_calib) != set(video):
+                    print('\nFound a videos pair with name: ')
+                    print(videos_tail[idx])
                     currentProject = ProjectManager(folder,
                                                     cam_names=cam_names,
                                                     videos_pair=video,
+                                                    videos_tail=videos_tail[idx],
                                                     videos_calib=videos_calib,
                                                     calib_path=calib_path)
                     self.projectList.append(currentProject)
 
-            print('\nA project was found and added!')
-
         print('\nTotal processing projects are: ' + str(len(self.projectList)))
+
+    def get_projects_list(self):
+        return self.projectList
+
+    def batch_triangulate(self):
+        print('\nTriangulating available projects ...')
+        for project in self.projectList:
+
+            print('\nStarting the triangulation process ...')
+            project.process_triangulate()
+            print('Done')
+
+        print('\nTriangulation done!')
+
+    def batch_plot_data(self):
+        print('\nPlotting triangulated project ...')
+        for project in self.projectList:
+
+            print('\nPlotting ...')
+            project.plot_data()
+            print('Done')
+
+        print('\nPlotting done!')
+
+    def batch_export_data(self):
+        print('\nExporting data from triangulated projects ...')
+        for project in self.projectList:
+
+            print('\nExporting data ...')
+            project.export_data()
+            print('Done')
+
     def get_camerawise_videos(self, path):
         # Find videos only specific to the cam names
         videos = [
@@ -60,7 +95,8 @@ class PathManager:
             for x in range(len(videotail_list))
         ]
 
-        return videospair_list
+        videotail_list = list(map(lambda x: x.replace('.avi', ''), videotail_list))
+        return videospair_list, videotail_list
 
     def get_calib_videos(self, path, calib_foldername='calibration'):
         videos = [

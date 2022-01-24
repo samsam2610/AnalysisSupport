@@ -4,6 +4,7 @@ from pathlib import Path
 import glob
 import toml
 import numpy as np
+import pandas as pd
 from aniposelib.boards import CharucoBoard, Checkerboard
 from aniposelib.cameras import Camera, CameraGroup
 from aniposelib.utils import load_pose2d_fnames
@@ -85,6 +86,7 @@ class ProjectManager:
                  project_path,
                  cam_names,
                  videos_pair,
+                 videos_tail,
                  videos_calib,
                  calib_path,
                  config=None) -> None:
@@ -92,6 +94,7 @@ class ProjectManager:
         self.project_path = project_path
         self.videos_pair = videos_pair
         self.videos_calib = videos_calib
+        self.videos_tail = videos_tail
         self.calib_path = calib_path
         self.cam_names = cam_names
         self.config = self.load_config(config)
@@ -102,6 +105,7 @@ class ProjectManager:
 
         self.create_pose_dict() # create video dict with cam names
         self.pose2d_fnames = load_pose2d_fnames(self.videos_result)
+        self.status_triangulate = False
 
     def load_config(self, fname):
         if fname is None:
@@ -168,31 +172,64 @@ class ProjectManager:
             print(e)
             pass
 
-    def process_triangulate(self, d=None):
-        if d is None:
-            d = self.pose2d_fnames
+    def process_triangulate(self, config=None, out=None, score_threshold=0.5):
+        if out is None:
+            out = self.pose2d_fnames
 
-        score_threshold = 0.5
+        if config is None:
+            config = self.config
 
-        n_cams, n_points, n_joints, _ = d['points'].shape
-        points = d['points']
-        scores = d['scores']
+        points = out['points']
+        self.all_scores = out['scores']
+        self.n_cams, self.n_frames, self.n_joints, _ = points.shape
 
-        bodyparts = d['bodyparts']
+        self.bodyparts = out['bodyparts']
 
         # remove points that are below threshold
-        points[scores < score_threshold] = np.nan
+        points[self.all_scores < score_threshold] = np.nan
 
-        points_flat = points.reshape(n_cams, -1, 2)
-        scores_flat = scores.reshape(n_cams, -1)
+        points_flat = points.reshape(self.n_cams, -1, 2)
+        scores_flat = self.all_scores.reshape(self.n_cams, -1)
 
-        p3ds_flat = cgroup.triangulate(points_flat, progress=True)
-        reprojerr_flat = cgroup.reprojection_error(p3ds_flat, points_flat, mean=True)
+        points_3d = self.cgroup.triangulate(points_flat, progress=True)
+        errors = self.cgroup.reprojection_error(points_3d, points_flat, mean=True)
+        good_points = ~np.isnan(points[:, :, :, 0])
+        self.all_scores[~good_points] = 2
 
-        p3ds = p3ds_flat.reshape(n_points, n_joints, 3)
-        reprojerr = reprojerr_flat.reshape(n_points, n_joints)
+        self.num_cams = np.sum(good_points, axis=0).astype('float')
 
-        return p3ds, reprojerr
+        self.all_points_3d = points_3d.reshape(self.n_frames, self.n_joints, 3)
+        self.all_errors = errors.reshape(self.n_frames, self.n_joints)
+        self.all_scores[~good_points] = 2
+        self.scores_3d = np.min(self.all_scores, axis=0)
+
+        self.scores_3d[self.num_cams < 2] = np.nan
+        self.all_errors[self.num_cams < 2] = np.nan
+        self.num_cams[self.num_cams < 2] = np.nan
+        self.M = np.identity(3)
+        self.center = np.zeros(3)
+
+        self.status_triangulate = True
+
+        return self.all_points_3d, self.all_errors, self.bodyparts
+
+    def plot_data(self):
+
+        if self.status_triangulate == False:
+            print('The project is not triangulated. Please run process_triangulate first!')
+            return
+
+        import matplotlib.pyplot as plt
+
+        bodyPartIndex = 2
+        plt.figure(figsize=(9.4, 6))
+        plt.plot(self.all_points_3d[:, bodyPartIndex, 0])
+        plt.plot(self.all_points_3d[:, bodyPartIndex, 1])
+        plt.plot(self.all_points_3d[:, bodyPartIndex, 2])
+        plt.xlabel("Time (frames)")
+        plt.ylabel("Coordinate (mm)")
+        plt.title("x, y, z coordinates of {}".format(self.bodyparts[bodyPartIndex]))
+        plt.show()
 
     def get_calibration_board(self, config):
         calib = config['calibration']
@@ -218,6 +255,34 @@ class ProjectManager:
                 board_type))
 
         return board
+
+    def export_data(self, output_fname=None):
+        if self.status_triangulate == False:
+            print('The project is not triangulated. Please run process_triangulate first!')
+            return
+
+        if output_fname is None:
+            output_fname = os.path.join(self.project_path, self.videos_tail + '.csv')
+
+        dout = pd.DataFrame()
+        for bp_num, bp in enumerate(self.bodyparts):
+            for ax_num, axis in enumerate(['x', 'y', 'z']):
+                dout[bp + '_' + axis] = self.all_points_3d[:, bp_num, ax_num]
+            dout[bp + '_error'] = self.all_errors[:, bp_num]
+            dout[bp + '_ncams'] = self.num_cams[:, bp_num]
+            dout[bp + '_score'] = self.scores_3d[:, bp_num]
+
+        for i in range(3):
+            for j in range(3):
+                dout['M_{}{}'.format(i, j)] = self.M[i, j]
+
+        for i in range(3):
+            dout['center_{}'.format(i)] = self.center[i]
+
+        dout['fnum'] = np.arange(self.n_frames)
+
+        dout.to_csv(output_fname, index=False)
+
 
     def create_pose_dict(self):
         videos = [
