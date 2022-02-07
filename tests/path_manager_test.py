@@ -1,6 +1,6 @@
 from anipose_support import *
 
-videopath_list = [#'/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /sample',
+videopath_list = ['/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /sample',
                   '/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat-e/12-6/vids']
 
 projects_path_list = PathManager(videopath_list)

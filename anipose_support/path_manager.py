@@ -40,8 +40,7 @@ class PathManager:
                                                     videos_pair=video,
                                                     videos_tail=videos_tail[idx],
                                                     videos_calib=videos_calib,
-                                                    calib_path=calib_path,
-                                                    video_type=self.videotype)
+                                                    calib_path=calib_path)
                     self.projectList.append(currentProject)
 
         print('\nTotal processing projects are: ' + str(len(self.projectList)))
@@ -100,15 +99,10 @@ class PathManager:
         return videospair_list, videotail_list
 
     def get_calib_videos(self, path, calib_foldername='calibration'):
-        videos = []
-        for cam_name in self.cam_names:
-            current_video = glob.glob(os.path.join(path, str(cam_name + "*" + self.calib_names + "*" + self.videotype)))
-            if len(current_video) > 0:
-                videos.append(current_video[0])
-        # videos = [
-        #     glob.glob(os.path.join(path, str("*" + self.calib_names + "*" + self.videotype)))
-        # ]
-        # videos = [y for x in videos for y in x]
+        videos = [
+            glob.glob(os.path.join(path, str("*" + self.calib_names + "*" + self.videotype)))
+        ]
+        videos = [y for x in videos for y in x]
 
         calib_path = os.path.join(path, calib_foldername)
 
@@ -123,14 +117,9 @@ class PathManager:
                     shutil.move(calib_video, calib_path)
         
         else:
-            # videos = [
-            #     glob.glob(os.path.join(calib_path, str("*" + self.calib_names + "*" + self.videotype)))
-            # ]
-            # videos = [y for x in videos for y in x]
-            for cam_name in self.cam_names:
-                current_video = glob.glob(os.path.join(calib_path, str(cam_name + "*" + self.calib_names + "*" + self.videotype)))
-                if len(current_video) > 0:
-                    videos.append(current_video[0])
-
+            videos = [
+                glob.glob(os.path.join(calib_path, str("*" + self.calib_names + "*" + self.videotype)))
+            ]
+            videos = [y for x in videos for y in x]
 
         return videos, calib_path
