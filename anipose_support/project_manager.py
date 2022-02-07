@@ -101,8 +101,6 @@ ARUCO_DICTS = {
     (7, 1000): aruco.DICT_7X7_1000
 }
 
-
-
 params = aruco.DetectorParameters_create()
 params.cornerRefinementMethod = aruco.CORNER_REFINE_CONTOUR
 params.adaptiveThreshWinSizeMin = 100
@@ -142,36 +140,7 @@ class ProjectManager:
         self.pose2d_fnames = load_pose2d_fnames(self.videos_result)
         self.status_triangulate = False
 
-    def load_config(self, fname):
-        if fname is None:
-            fname = 'config.toml'
-
-        if os.path.exists(fname):
-            config = toml.load(fname)
-        else:
-            config = dict()
-
-        config['path'] = self.project_path
-
-        if 'project' not in config:
-            config['project'] = os.path.basename(config['path'])
-
-        for k, v in DEFAULT_CONFIG.items():
-            if k not in config:
-                config[k] = v
-            elif isinstance(v, dict): # handle nested defaults
-                for k2, v2 in v.items():
-                    if k2 not in config[k]:
-                        config[k][k2] = v2
-
-        return config
-    
-    def dump_config(self, config):
-        fname = 'config.toml'
-        # toml_string = toml.dumps(config)
-        fpath = os.path.join(self.project_path, fname)
-        with open(fpath, "w") as toml_file:
-            toml.dump(config, toml_file)
+        self.output_fname = os.path.join(self.project_path, self.videos_tail + '.csv')
 
     def check_calibration(self, config=None):
         if config is None:
@@ -212,18 +181,30 @@ class ProjectManager:
             print(e)
             pass
 
-    def process_triangulate(self, config=None, out=None, score_threshold=0.5):
+    def process_triangulate(self, config=None, out=None, score_threshold=0.5, over_write=True):
         if out is None:
             out = self.pose2d_fnames
 
         if config is None:
             config = self.config
 
+        if os.path.exists(self.output_fname):
+            print('\nThe videos were triangulate before ...')
+            if not over_write:
+                print('To re-do the process, please try again with overwriting permission!')
+                self.status_triangulate = True
+                print('Loading the processed data ...')
+                self.load_data()
+                print('Finished loading data!')
+                return
+            else:
+                print('Re-triangulating ...')
+
         points = out['points']
         self.all_scores = out['scores']
         self.n_cams, self.n_frames, self.n_joints, _ = points.shape
 
-        self.bodyparts = out['bodyparts']
+        self.body_parts = out['bodyparts']
 
         # remove points that are below threshold
         points[self.all_scores < score_threshold] = np.nan
@@ -249,9 +230,11 @@ class ProjectManager:
         self.M = np.identity(3)
         self.center = np.zeros(3)
 
+        self.optim_data(config=config)
+
         self.status_triangulate = True
 
-        return self.all_points_3d, self.all_errors, self.bodyparts
+        return self.all_points_3d, self.all_errors, self.body_parts
 
     def plot_data(self):
 
@@ -268,7 +251,7 @@ class ProjectManager:
         plt.plot(self.all_points_3d[:, bodyPartIndex, 2])
         plt.xlabel("Time (frames)")
         plt.ylabel("Coordinate (mm)")
-        plt.title("x, y, z coordinates of {}".format(self.bodyparts[bodyPartIndex]))
+        plt.title("x, y, z coordinates of {}".format(self.body_parts[bodyPartIndex]))
         plt.show()
 
     def get_calibration_board(self, config):
@@ -298,7 +281,7 @@ class ProjectManager:
 
         return board
 
-    def export_data(self, output_fname=None):
+    def export_data(self, output_fname=None, config=None):
         if self.status_triangulate == False:
             print('The project is not triangulated. Please run process_triangulate first!')
             return
@@ -306,8 +289,11 @@ class ProjectManager:
         if output_fname is None:
             output_fname = os.path.join(self.project_path, self.videos_tail + '.csv')
 
+        if config is None:
+            config = self.config
+
         dout = pd.DataFrame()
-        for bp_num, bp in enumerate(self.bodyparts):
+        for bp_num, bp in enumerate(self.body_parts):
             for ax_num, axis in enumerate(['x', 'y', 'z']):
                 dout[bp + '_' + axis] = self.all_points_3d[:, bp_num, ax_num]
             dout[bp + '_error'] = self.all_errors[:, bp_num]
@@ -324,6 +310,51 @@ class ProjectManager:
         dout['fnum'] = np.arange(self.n_frames)
 
         dout.to_csv(output_fname, index=False)
+
+    def load_data(self, config=None, output_fname=None):
+        if output_fname is None:
+            output_fname = self.output_fname
+
+        if config is None:
+            config = self.config
+
+        try:
+            scheme = config['labeling']['scheme']
+        except KeyError:
+            scheme = []
+            
+        data = pd.read_csv(output_fname)
+        cols = [x for x in data.columns if '_error' in x]
+
+        if len(scheme) == 0:
+            self.body_parts = [c.replace('_error', '') for c in cols]
+        else:
+            self.body_parts = sorted(set([x for dx in scheme for x in dx]))
+
+        bp_dict = dict(zip(self.body_parts, range(len(self.body_parts))))
+
+        self.all_points_3d = np.transpose(np.array([np.array(data.loc[:, (bp + '_x', bp + '_y', bp + '_z')])
+                                    for bp in self.body_parts], dtype='float64'), [1, 0, 2])
+
+        self.all_errors = np.transpose(np.array([np.array(data.loc[:, bp + '_error'])
+                                        for bp in self.body_parts], dtype='float64'), [1, 0])
+
+        self.scores_3d = np.transpose(np.array([np.array(data.loc[:, bp + '_score'])
+                                        for bp in self.body_parts], dtype='float64'), [1, 0])
+
+        self.num_cams = np.transpose(np.array([np.array(data.loc[:, bp + '_ncams'])
+                                        for bp in self.body_parts], dtype='float64'), [1, 0])
+        self.M = np.zeros((3,3))
+        for i in range(3):
+            for j in range(3):
+                self.M[i, j] = data.loc[0, 'M_{}{}'.format(i, j)]
+
+        self.center = np.zeros(3)
+        for i in range(3):
+             self.center[i] = data.loc[0, 'center_{}'.format(i)]
+
+        self.n_frames = np.max(data.loc[:, 'fnum']) + 1
+        self.optim_data(config=config)
 
     def create_pose_dict(self):
         videos = [
@@ -452,3 +483,53 @@ class ProjectManager:
             # Closes all the frames
             cv2.destroyAllWindows()
 
+    def dump_config(self, config):
+        fname = 'config.toml'
+        # toml_string = toml.dumps(config)
+        fpath = os.path.join(self.project_path, fname)
+        with open(fpath, "w") as toml_file:
+            toml.dump(config, toml_file)
+
+    def load_config(self, fname):
+        if fname is None:
+            fname = 'config.toml'
+
+        if os.path.exists(fname):
+            config = toml.load(fname)
+        else:
+            config = dict()
+
+        config['path'] = self.project_path
+
+        if 'project' not in config:
+            config['project'] = os.path.basename(config['path'])
+
+        for k, v in DEFAULT_CONFIG.items():
+            if k not in config:
+                config[k] = v
+            elif isinstance(v, dict): # handle nested defaults
+                for k2, v2 in v.items():
+                    if k2 not in config[k]:
+                        config[k][k2] = v2
+
+        return config
+
+    def optim_data(self, config=None):
+        if config is None:
+            config = self.config
+
+        if config['triangulation']['optim']:
+            self.all_errors[np.isnan(self.all_errors)] = 0
+        else:
+            self.all_errors[np.isnan(self.all_errors)] = 10000
+        good = (self.all_errors < 100)
+        self.all_points_3d[~good] = np.nan
+
+        self.all_points_flat = self.all_points_3d.reshape(-1, 3)
+        check = ~np.isnan(self.all_points_flat[:, 0])
+
+        if np.sum(check) < 10:
+            print('too few points to plot, skipping...')
+            return
+
+        self.low_points, self.high_points = np.percentile(self.all_points_flat[check], [1, 99], axis=0)

@@ -49,12 +49,12 @@ class PathManager:
     def get_projects_list(self):
         return self.projectList
 
-    def batch_triangulate(self):
+    def batch_triangulate(self, over_write=True):
         print('\nTriangulating available projects ...')
         for project in self.projectList:
 
             print('\nStarting the triangulation process ...')
-            project.process_triangulate()
+            project.process_triangulate(over_write=over_write)
             print('Done')
 
         print('\nTriangulation done!')
