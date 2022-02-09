@@ -11,6 +11,15 @@ from aniposelib.boards import CharucoBoard, Checkerboard
 from aniposelib.cameras import Camera, CameraGroup
 from aniposelib.utils import load_pose2d_fnames
 
+from collections import defaultdict
+from matplotlib.pyplot import get_cmap
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits import mplot3d
+import skvideo.io
+from tqdm import tqdm, trange
+
 
 DEFAULT_CONFIG = {
     'video_extension': 'avi',
@@ -107,6 +116,50 @@ params.adaptiveThreshWinSizeMin = 100
 params.adaptiveThreshWinSizeMax = 700
 params.adaptiveThreshWinSizeStep = 50
 params.adaptiveThreshConstant = 0
+
+
+def connect(ax, points, bps, bp_dict, color):
+    ixs = [bp_dict[bp] for bp in bps]
+    # return mlab.plot3d(points[ixs, 0], points[ixs, 1], points[ixs, 2],
+    #                    np.ones(len(ixs)), reset_zoom=False,
+    #                    color=color, tube_radius=None, line_width=10)
+    return ax.plot3D(points[ixs, 0], points[ixs, 1], points[ixs, 2])
+
+
+def connect_all(ax, points, scheme, bp_dict, cmap):
+    lines = []
+    for i, bps in enumerate(scheme):
+        line = connect(ax, points, bps, bp_dict, color=cmap(i)[:3])
+        lines.append(line)
+    return lines
+
+
+def update_line(line, points, bps, bp_dict):
+    ixs = [bp_dict[bp] for bp in bps]
+    # ixs = [bodyparts.index(bp) for bp in bps]
+    new = np.vstack([points[ixs, 0], points[ixs, 1], points[ixs, 2]]).T
+    line.mlab_source.points = new
+
+
+def update_all_lines(lines, points, scheme, bp_dict):
+    for line, bps in zip(lines, scheme):
+        update_line(line, points, bps, bp_dict)
+
+
+def update(framenum, framedict, all_points, scheme, bp_dict, cmap, ax, low, high):
+    ax.clear()
+    nparts = len(bp_dict)
+    if framenum in framedict:
+        points = all_points[:, framenum]
+    else:
+        points = np.ones((nparts, 3))*np.nan
+
+    ax.axes.set_xlim3d(left=low[0], right=high[0])
+    ax.axes.set_ylim3d(bottom=low[1], top=high[1])
+    ax.axes.set_zlim3d(bottom=low[2], top=high[2])
+    connect_all(ax, points, scheme, bp_dict, cmap)
+    return ax
+
 
 class ProjectManager:
     def __init__(self,
@@ -237,7 +290,6 @@ class ProjectManager:
         return self.all_points_3d, self.all_errors, self.body_parts
 
     def plot_data(self):
-
         if self.status_triangulate == False:
             print('The project is not triangulated. Please run process_triangulate first!')
             return
@@ -364,7 +416,10 @@ class ProjectManager:
         videos = [y for x in videos for y in x]
         self.videos_result = dict(zip(self.cgroup.get_names(), videos))
 
-    def draw_axis(self, frame, camera_matrix, dist_coeff, boardObj, verbose=True):
+    def draw_axis(self, frame, camera_matrix, dist_coeff, boardObj=None, verbose=True):
+        if boardObj is None:
+            boardObj = self.boardObj
+
         try:
             corners, ids, rejected_points = cv2.aruco.detectMarkers(frame, boardObj.dictionary, parameters=params)
 
@@ -428,6 +483,33 @@ class ProjectManager:
             print('Distance from camera: {0} m'.format(np.linalg.norm(p_tvec)))
 
         return frame
+
+    def visualize_labels(self, config=None):
+        nparts = len(bodyparts)
+        framedict = dict(zip(data['fnum'], data.index))
+
+        writer = skvideo.io.FFmpegWriter(outname, inputdict={
+            # '-hwaccel': 'auto',
+            '-framerate': str(fps),
+        }, outputdict={
+            '-vcodec': 'h264', '-qp': '28', '-pix_fmt': 'yuv420p'
+        })
+
+        cmap = get_cmap('tab10')
+
+        points = np.copy(all_points[:, 20])
+        points[0] = low
+        points[1] = high
+
+        # print(points.shape)
+        s = np.arange(points.shape[0])
+        good = ~np.isnan(points[:, 0])
+
+        # fig = mlab.figure(bgcolor=(1,1,1), size=(500,500))
+        # fig.scene.anti_aliasing_frames = 2
+
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
 
     def load_calibration(self, fname, cam_num=0):
         master_dict = toml.load(fname)
@@ -533,3 +615,5 @@ class ProjectManager:
             return
 
         self.low_points, self.high_points = np.percentile(self.all_points_flat[check], [1, 99], axis=0)
+
+
