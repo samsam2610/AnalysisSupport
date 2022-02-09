@@ -6,17 +6,27 @@ import glob
 from anipose_support.project_manager import ProjectManager
 # from project_manager import *
 
+# from deeplabcut.utils import auxiliaryfunctions
+
 videofile_pathlist = ['/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat i0/vids',
                        '/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat-e/12-6/vids',
                        '/Volumes/GoogleDrive/My Drive/Rat/Treadmill test /rat-e/vids/11-6']
+model_folder = '/Users/sam/Downloads/TWO_CAM_FOR_SAM/R11_treadmill/'
 
 class PathManager:
-    def __init__(self, videofile_pathList, videotype='.avi', cam_names=['cam1', 'cam2'], calib_name ='calib') -> None:
+    def __init__(self,
+                 videofile_pathList,
+                 videotype='.avi',
+                 cam_names=['cam1', 'cam2'],
+                 calib_name ='calib',
+                 model_folder=None) -> None:
         self.projectList = []
         self.videotype = videotype
         self.cam_names = cam_names
         self.calib_names = calib_name
         self.test = 2
+        if model_folder is not None:
+            self.model_folder = model_folder
 
         print('\nInitializing project path list ...')
         for folder in videofile_pathList:         
@@ -134,3 +144,7 @@ class PathManager:
 
 
         return videos, calib_path
+
+    def set_model_folder(self, model_folder):
+        self.model_folder = model_folder
+        print('Model folder is ' + model_folder)
