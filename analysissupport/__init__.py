@@ -1,7 +1,4 @@
 import os
-
-import matplotlib as mpl
-
-mpl.use("WxAgg")
-
-from analysissupport.gui.base_layer import launch_support
+from analysissupport.dlc_support import *
+from analysissupport.database_support import *
+from analysissupport.anipose_support import *
