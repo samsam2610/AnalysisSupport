@@ -15,7 +15,7 @@ def install_upgrade(package):
 def project_2d():
     print("Installing and uninstalling packages")
     print("Installing DeepLabCut")
-    install("deeplabcut")
+    install("'deeplabcut[gui]'==2.2.0.3")
     print("Fixing opencv-python issues")
     uninstall("opencv-python")
     uninstall("opencv-contrib-python")
@@ -25,7 +25,7 @@ def project_2d():
 def project_3d():
     print("Installing and uninstalling packages")
     print("Installing DeepLabCut")
-    install("deeplabcut")
+    install("'deeplabcut[gui]'==2.2.0.3")
     print("Installing ffmpeg and app tools")
     install("ffmpeg")
     install_upgrade("apptools")

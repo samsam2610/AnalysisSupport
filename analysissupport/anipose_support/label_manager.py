@@ -34,3 +34,6 @@ class LabelManager:
         self.pose2d_fnames = load_pose2d_fnames(videos_result)
         return self.pose2d_fnames
 
+    def analyze_pose2D(self):
+        pass
+

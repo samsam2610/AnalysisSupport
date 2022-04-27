@@ -19,7 +19,7 @@ def setConfig_ContinueTraining(path_config_file, trainingsetindex=0):
             cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"
         )
     )
-    cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
+    cfg_dlc = auxiliaryfuctions.read_plainconfig(poseconfigfile)
 
     modelfolder = os.path.join(
         cfg["project_path"],
