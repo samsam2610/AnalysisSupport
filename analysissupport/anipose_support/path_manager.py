@@ -3,7 +3,7 @@ import csv
 from pathlib import Path
 import glob
 
-from anipose_support.project_manager import ProjectManager
+from analysissupport.anipose_support.project_manager import ProjectManager
 # from project_manager import *
 
 # from deeplabcut.utils import auxiliaryfunctions

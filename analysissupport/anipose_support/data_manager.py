@@ -1,4 +1,4 @@
-from anipose_support.project_manager import ProjectManager
+from analysissupport.anipose_support.project_manager import ProjectManager
 import sys, os
 import numpy as np
 import pandas as pd
