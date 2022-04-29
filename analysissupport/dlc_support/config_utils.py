@@ -19,7 +19,7 @@ def setConfig_ContinueTraining(path_config_file, trainingsetindex=0):
             cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"
         )
     )
-    cfg_dlc = auxiliaryfuctions.read_plainconfig(poseconfigfile)
+    cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
 
     modelfolder = os.path.join(
         cfg["project_path"],
@@ -38,4 +38,6 @@ def setConfig_ContinueTraining(path_config_file, trainingsetindex=0):
     cfg_dlc["init_weights"] = os.path.join(
         modelfolder, "train", Snapshots[snapshotindex]
     )
+
+    cfg_dlc["project_path"] = cfg["project_path"]
     auxiliaryfunctions.write_plainconfig(poseconfigfile, cfg_dlc)
