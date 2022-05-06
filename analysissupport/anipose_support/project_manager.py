@@ -126,7 +126,7 @@ class ProjectManager:
 
     def check_calibration(self, config=None):
         # Handle by calibration_manager.py
-        from anipose_support.calibration_manager import CalibrationManager
+        from analysissupport.anipose_support.calibration_manager import CalibrationManager
         calibration_object = CalibrationManager(self)
         cgroup = calibration_object.check_calibration()
 
@@ -134,14 +134,14 @@ class ProjectManager:
 
     def process_triangulate(self, config=None, out=None, score_threshold=0.5, over_write=True):
         # Handle by data_manager.py
-        from anipose_support.data_manager import DataManager
+        from analysissupport.anipose_support.data_manager import DataManager
 
         self.data_object = DataManager(self)
         self.data_object.process_triangulate(config=config, out=out, score_threshold=score_threshold, over_write=over_write)
 
     def plot_data(self):
         # Handle by plot_manager.py
-        from anipose_support.plot_manager import PlotManager
+        from analysissupport.anipose_support.plot_manager import PlotManager
         try:
             plot_object = PlotManager(self, self.data_object)
             plot_object.plot_2D()
@@ -153,7 +153,7 @@ class ProjectManager:
         try:
             self.data_object.export_data(output_fname=output_fname, config=config)
         except AttributeError:
-            from anipose_support.data_manager import DataManager
+            from analysissupport.anipose_support.data_manager import DataManager
 
             self.data_object = DataManager(self)
             self.data_object.process_triangulate()
@@ -163,13 +163,13 @@ class ProjectManager:
         try:
             self.data_object.load_data(output_fname=output_fname, config=config)
         except AttributeError:
-            from anipose_support.data_manager import DataManager
+            from analysissupport.anipose_support.data_manager import DataManager
 
             self.data_object = DataManager(self)
             self.data_object.load_data(output_fname=output_fname, config=config)
 
     def load_label_data(self):
-        from anipose_support.label_manager import LabelManager
+        from analysissupport.anipose_support.label_manager import LabelManager
         self.label_object = LabelManager(self)
         self.pose2d_fnames = self.label_object.load_pose2D()
 
