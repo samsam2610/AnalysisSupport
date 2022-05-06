@@ -34,7 +34,7 @@ def project_3d():
     uninstall("opencv-contrib-python")
     install("opencv-contrib-python")
     print("Installing Anipose")
-    install("anipose")
+    install("anipose==0.8.1")
     install("aniposelib==0.3.9")
     print("Installing numba")
     install("numba==0.50.1")
