@@ -1,4 +1,4 @@
-from anipose_support.project_manager import ProjectManager
+from analysissupport.anipose_support.project_manager import ProjectManager
 import numpy as np
 import sys, os
 import csv
