@@ -25,11 +25,12 @@ class PathManager:
         self.cam_names = cam_names
         self.calib_names = calib_name
         self.test = 2
+        self.videofile_pathList = videofile_pathList
         if model_folder is not None:
             self.model_folder = model_folder
 
         print('\nInitializing project path list ...')
-        for folder in videofile_pathList:         
+        for folder in self.videofile_pathList:         
             videos_pair, videos_tail = self.get_camerawise_videos(folder)
             videos_calib, calib_path = self.get_calib_videos(folder)
             print('\nCurrent folder: ')
@@ -58,6 +59,18 @@ class PathManager:
 
     def get_projects_list(self):
         return self.projectList
+
+    def initialize_empty_project(self):
+        for folder in self.videofile_pathList:         
+            videos_calib, calib_path = self.get_calib_videos(folder)
+            currentProject = ProjectManager(folder,
+                                            cam_names=self.cam_names,
+                                            videos_pair=[],
+                                            videos_tail=[],
+                                            videos_calib=videos_calib,
+                                            calib_path=calib_path,
+                                            video_type=self.videotype)
+            self.projectList.append(currentProject)
 
     def batch_triangulate(self, over_write=True):
         print('\nTriangulating available projects ...')
