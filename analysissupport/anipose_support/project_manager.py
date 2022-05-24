@@ -116,10 +116,7 @@ class ProjectManager:
         self.config = self.load_config(config)
         self.dump_config(self.config)
 
-        self.pose2d_fnames = self.load_label_data()
         self.status_triangulate = False
-
-        self.output_fname = os.path.join(self.project_path, self.videos_tail + '.csv')
 
     def check_calibration(self, config=None):
         # Handle by calibration_manager.py
@@ -172,6 +169,11 @@ class ProjectManager:
         self.pose2d_fnames = self.label_object.load_pose2D()
 
         return self.pose2d_fnames
+
+    def get_output_fname(self):
+        self.output_fname = os.path.join(self.project_path, self.videos_tail + '.csv')
+        
+        return self.output_fname
 
     def dump_config(self, config):
         fname = 'config.toml'
