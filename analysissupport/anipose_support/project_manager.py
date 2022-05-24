@@ -116,6 +116,7 @@ class ProjectManager:
         self.config = self.load_config(config)
         self.dump_config(self.config)
 
+        self.check_calibration()
         self.status_triangulate = False
 
     def check_calibration(self, config=None):
@@ -123,6 +124,7 @@ class ProjectManager:
         from analysissupport.anipose_support.calibration_manager import CalibrationManager
         self.calibration_object = CalibrationManager(self)
         self.cgroup = self.calibration_object.check_calibration()
+        return self.cgroup
 
     def export_calibration(self, config=None):
         return self.calibration_object
