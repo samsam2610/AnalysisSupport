@@ -116,9 +116,6 @@ class ProjectManager:
         self.config = self.load_config(config)
         self.dump_config(self.config)
 
-        # Handle by calibration_manager.py
-        self.cgroup = self.check_calibration(self.config)
-
         self.pose2d_fnames = self.load_label_data()
         self.status_triangulate = False
 
@@ -127,10 +124,11 @@ class ProjectManager:
     def check_calibration(self, config=None):
         # Handle by calibration_manager.py
         from analysissupport.anipose_support.calibration_manager import CalibrationManager
-        calibration_object = CalibrationManager(self)
-        cgroup = calibration_object.check_calibration()
+        self.calibration_object = CalibrationManager(self)
+        self.cgroup = self.calibration_object.check_calibration()
 
-        return cgroup
+    def export_calibration(self, config=None):
+        return self.calibration_object
 
     def process_triangulate(self, config=None, out=None, score_threshold=0.5, over_write=True):
         # Handle by data_manager.py
