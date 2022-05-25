@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 import os
-from deeplabcut.utils import auxiliaryfunctions
+from analysissupport.dlc_support import auxiliaryfunctions
 
 def setConfig_ContinueTraining(
     path_config_file,
