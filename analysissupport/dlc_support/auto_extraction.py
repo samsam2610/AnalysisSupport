@@ -33,14 +33,14 @@ class AutoFrameExtraction:
         
         self.DLCscorer, DLCscorerlegacy = auxiliaryfunctions.GetScorerName(
             self.cfg,
-            shuffle,
+            self.shuffle,
             trainFraction=self.cfg["TrainingFraction"][trainingsetindex],
             modelprefix=modelprefix,
         )
         self.videos = self.cfg["video_sets"].keys()
         self.HUMANscorer = self.cfg["scorer"]
 
-        self.video_names = [Path(i).stem for i in videos]
+        self.video_names = [Path(i).stem for i in self.videos]
         alldatafolders = [
             fn
             for fn in os.listdir(Path(config).parent / "labeled-data")
@@ -50,6 +50,23 @@ class AutoFrameExtraction:
         self.comparisonbodyparts = auxiliaryfunctions.IntersectionofBodyPartsandOnesGivenbyUser(
             self.cfg, comparisonbodyparts
         )
+
+    def getFilteredFrames(self,
+                          videoPath,
+                          P=0.999):
+        videoName = Path(videoPath).stem
+
+        output_path = Path(videoPath).parent.joinpath(videoName)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        destfolder = str(Path(videoPath).parents[0])
+
+        df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
+            destfolder, videoName, self.DLCscorer, track_method=self.track_method
+        )
+
+        return df
+
 
     def extractFrameWithLikelihood(self,
                                    P=0.999):
