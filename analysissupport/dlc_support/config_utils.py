@@ -54,6 +54,6 @@ def setConfig_ContinueTraining(
 
     cfg_dlc["project_path"] = cfg["project_path"]
     multi_step = cfg_dlc["multi_step"]
-    cfg_dlc["multi_step"].append([0.001, multi_step[-1][1] + additionalIteration])
+    cfg_dlc["multi_step"].append([0.001, multi_step[-1][1] + Snapshots[snapshotindex]])
 
     auxiliaryfunctions.write_plainconfig(poseconfigfile, cfg_dlc)
