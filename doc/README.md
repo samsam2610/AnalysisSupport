@@ -96,10 +96,91 @@ Progress checklist for things tested and can do on the workstation without needi
 - [x] Anipose - Calibration
 - [x] Anipose - Triangulate
 - [ ] Analysis Support - Testing and updating ability
-
-1. Create and label video
+0. Optional setup
+    Install this package (it is this repo!) to use some helper functions that will make our lives easier. 
+    ```shell
+    pip install --force-reinstall git+https://github.com/samsam2610/AnalysisSupport
+    ```
+1. Create and label video (DLC)
     1. Create the project and hand labels the videos on your computer
     2. Use `scp` or `rsync` to transfer the project to the workstation
-2.  Train the model
-    1.  
+2.  Create the training set (DLC)
+    1. This is the tricky part. The problem is that the training directory is based on where the training set is created. If the training set was created on one machine and going to be trained on another, we must manually modify the directory of the training set.
+    2. To simplify the process, it is advised that we create the training set on the same machine that is going to be used for training.
+    - [ ] Test training set creation
+    3. Code snippet for creating the training set
+    ```python
+    import os
+    import sys
+    import deeplabcut
 
+    os.environ["DLClight"]="True"
+
+    # Specify project info
+    ProjectFolderName = 'Spinal Implant-Sam-2021-10-05'
+    VideoType = 'avi' 
+    path_config_file = '/<path to config file/config.yaml'
+
+    # Create the training set
+    deeplabcut.create_training_dataset(path_config_file, net_type='resnes_101', augmenter_type='imgaug')
+    ```
+    This code snippet can be used either in Ipython or Notebook.
+3. Train the model (DLC)
+   1. (Optional) If we are going to re-train a trained model with updated dataset/labels, assuming the optional package is installed, we can quickly resume the training on the said model by running this snippet
+   ```python
+    from analysissupport.dlc_support import *
+    setConfig_ContinueTraining(path_config_file, additionalIteration=1000000)
+    ```
+    2. The model can be trained using this snippet
+    (Assuming that the library is import and `path_config_file` is specified)
+    (For the `gputouse` flag, we can properly test using multiple gpu by setting it to 2)
+    ```python
+    deeplabcut.train_network(path_config_file, shuffle=1, displayiters=10, saveiters=500, gputouse=None
+    ```
+4. Analyze the videos (DLC OR Anipose)
+We have many options for this step:
+    1. Do it through Anipose's CLI to label the video. It requires some setups, but once done, the files are neatly organized for triangulation. Here are the steps:
+        1. Create the folder following the instruction on the website (https://anipose.readthedocs.io/en/latest/start2d.html)
+        2. Have you config.toml ready with the appropriate directory of the DLC project.
+        3. Move the raw videos to videos-raw
+        4. Use Anipose's CLI to analyze the videos. Specifically: 
+        ```bash
+        anipose analyze
+        ```
+    2. Use the DLC function with some helpers (required Analysis-Support installed, or it will be a pain). Here are the steps:
+        1. Create a list of videos to be analyzed using this snippet:
+        ```python
+        from analysissupport.dlc_support import *
+        videofile_pathlist = [ 
+            'path to folder containing videos 1',
+            'path to folder containing videos 2',
+            ]
+        videoListObject = ProcessVideoList(videofile_pathlist)
+        videoUnprocessList = videoListObject.getListofUnprocessedVideos()
+        ```
+        The `videoUnprocessList` contains the paths to individual videos found in the above folders. If you don't use this function, you will have to create the list by yourself (Yes, that's true!!). It would be some like this:
+        ```python
+        videoUnprocessList = [
+            'path to video 1 in folder 1',
+            'path to video 2 in folder 1',
+            'path to video 1 in folder 2',
+            'path to video 2 in folder 2',
+        ]
+        ```
+        2. Analyze the videos with this snippet
+        ```python
+        deeplabcut.analyze_videos(path_config_file, videoUnprocessList, videotype=VideoType, save_as_csv=True)
+        deeplabcut.create_labeled_video(path_config_file, videoUnprocessList, videotype=VideoType)
+        ```
+5. Calibration (Anipose)
+    1. `cd` to the folder containing the `config.toml` file.
+    2. Have the calibration videos in the `calibration` folder. It should be in the same folder as the `videos-raw``
+    3. Run the CLI
+    ```bash
+    anipose calibration
+    ```
+    4. If the calibration is successful, the `calibration` folder should have the `calibration.toml` file.
+6. Triangulation (Anipose)
+    1. To use this step, it would be easier to run the `anipose analyze` function to analyze the `videos-raw` (going 4.1 route). Make sure the `calibration/calibration.toml` exists
+    2. Run the CLI `anipose triangulate`
+7. Additional steps - follow instructions on Anipose documentation.
