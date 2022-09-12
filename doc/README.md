@@ -14,13 +14,13 @@ Here are some info + terminologies for future references:
 - The shell is `bash`
 
 #### 2. Connect and setup the workstation
-1. SSH into the computer using
+##### 1. SSH into the computer using
     ```shell
     ssh <your username>@165.124.111.121
     ```
     When prompt, enter your user's password
 
-2. Set up in the conda environment:
+##### 2. Set up in the conda environment:
    1. Install DLC first by following the instruction here https://deeplabcut.github.io/DeepLabCut/docs/installation.html
    2. Specifically, clone the repo and create the environment using the conda file in the clone folder.
    3. Once done, activate the environment (`conda activate deeplabcut`)
@@ -41,7 +41,7 @@ Here are some info + terminologies for future references:
    11. TODO
    - [ ] Create .yml file to consolidate the installation process
 
-3. Setup the FSM resfiles
+##### 3. Setup the FSM resfiles
    1. Note: To access the FSM resfile from SSH, we need to manually mount the server to the computer. After finish transferring the file, make it a good practice to unmount the directory using the command from the 4th step.
    2. Make mounting point directory - This can be anywhere, just remember to change it to the same directory in the 3rd step
     ```shell
@@ -55,7 +55,7 @@ Here are some info + terminologies for future references:
     ```shell
     sudo umount -l /resfiles
     ```
-4. Transferring the files to and from the workstation
+##### 4. Transferring the files to and from the workstation
    1. Change the current directory to where the files are currently located
     ```shell
     cd <original directory>
@@ -65,7 +65,7 @@ Here are some info + terminologies for future references:
     cp <file> <destination's directory>
     ```
       1. Can use wild card (such as `*.csv`) to select all files with the same pattern in the current directory.
-5. Setup the jupyter notebook
+##### 5. Setup the Jupyter notebook
    1. Notes: Follow the documentation from Anaconda
    https://docs.anaconda.com/anaconda/user-guide/tasks/remote-jupyter-notebook/
    2. `cd` into the folder with the target notebook
@@ -96,15 +96,15 @@ Progress checklist for things tested and can do on the workstation without needi
 - [x] Anipose - Calibration
 - [x] Anipose - Triangulate
 - [ ] Analysis Support - Testing and updating ability
-0. Optional setup
+##### 0. Optional setup
     Install this package (it is this repo!) to use some helper functions that will make our lives easier. 
     ```shell
     pip install --force-reinstall git+https://github.com/samsam2610/AnalysisSupport
     ```
-1. Create and label video (DLC)
+##### 1. Create and label video (DLC)
     1. Create the project and hand labels the videos on your computer
     2. Use `scp` or `rsync` to transfer the project to the workstation
-2.  Create the training set (DLC)
+##### 2.  Create the training set (DLC)
     1. This is the tricky part. The problem is that the training directory is based on where the training set is created. If the training set was created on one machine and going to be trained on another, we must manually modify the directory of the training set.
     2. To simplify the process, it is advised that we create the training set on the same machine that is going to be used for training.
     - [ ] Test training set creation
@@ -125,19 +125,21 @@ Progress checklist for things tested and can do on the workstation without needi
     deeplabcut.create_training_dataset(path_config_file, net_type='resnes_101', augmenter_type='imgaug')
     ```
     This code snippet can be used either in Ipython or Notebook.
-3. Train the model (DLC)
+##### 3. Train the model (DLC)
    1. (Optional) If we are going to re-train a trained model with updated dataset/labels, assuming the optional package is installed, we can quickly resume the training on the said model by running this snippet
    ```python
     from analysissupport.dlc_support import *
     setConfig_ContinueTraining(path_config_file, additionalIteration=1000000)
     ```
+
     2. The model can be trained using this snippet
     (Assuming that the library is import and `path_config_file` is specified)
     (For the `gputouse` flag, we can properly test using multiple gpu by setting it to 2)
     ```python
     deeplabcut.train_network(path_config_file, shuffle=1, displayiters=10, saveiters=500, gputouse=None
     ```
-4. Analyze the videos (DLC OR Anipose)
+    
+##### 4. Analyze the videos (DLC OR Anipose)
 We have many options for this step:
     1. Do it through Anipose's CLI to label the video. It requires some setups, but once done, the files are neatly organized for triangulation. Here are the steps:
         1. Create the folder following the instruction on the website (https://anipose.readthedocs.io/en/latest/start2d.html)
@@ -172,7 +174,7 @@ We have many options for this step:
         deeplabcut.analyze_videos(path_config_file, videoUnprocessList, videotype=VideoType, save_as_csv=True)
         deeplabcut.create_labeled_video(path_config_file, videoUnprocessList, videotype=VideoType)
         ```
-5. Calibration (Anipose)
+##### 5. Calibration (Anipose)
     1. `cd` to the folder containing the `config.toml` file.
     2. Have the calibration videos in the `calibration` folder. It should be in the same folder as the `videos-raw``
     3. Run the CLI
@@ -180,7 +182,7 @@ We have many options for this step:
     anipose calibration
     ```
     4. If the calibration is successful, the `calibration` folder should have the `calibration.toml` file.
-6. Triangulation (Anipose)
+##### 6. Triangulation (Anipose)
     1. To use this step, it would be easier to run the `anipose analyze` function to analyze the `videos-raw` (going 4.1 route). Make sure the `calibration/calibration.toml` exists
     2. Run the CLI `anipose triangulate`
-7. Additional steps - follow instructions on Anipose documentation.
+##### 7. Additional steps - follow instructions on Anipose documentation.
