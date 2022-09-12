@@ -1,4 +1,2 @@
 # AnalysisSupport
-Supporting functions and classes for Deeplabcut and Anipose
-
-diyatest
+Please navigate to the Doc folder for instructions

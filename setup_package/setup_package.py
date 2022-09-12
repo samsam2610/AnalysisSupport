@@ -32,7 +32,7 @@ def project_3d():
     print("Fixing opencv-python issues")
     uninstall("opencv-python")
     uninstall("opencv-contrib-python")
-    install("opencv-contrib-python")
+    install("opencv-contrib-python==3.4.17.63")
     print("Installing Anipose")
     install("anipose==1.0.1")
     install("aniposelib==0.4.2")
