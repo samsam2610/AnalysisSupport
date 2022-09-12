@@ -80,4 +80,23 @@ Here are some info + terminologies for future references:
    REMOTE_HOST - The IP of the computer
    5. Navigate your browser to http://localhost:8080/ to work on the notebook
 
-#### 3. Pipeline notes
+#### 3. Pipeline notes instructions
+Progress checklist for things tested and can do on the workstation without needing the GUI or notebook:
+- [ ] DLC - Add labeled data
+- [ ] DLC - Create training set
+- [x] DLC - Train model - Using IPython or notebook
+  - [ ] DLC - Training from CLI
+  - [ ] DLC - Auto add labeled data to train
+- [x] DLC - Analyze videos
+- [x] DLC - Label videos
+- [ ] Anipose - Create template folder and config file
+- [x] Anipose - Label 2d-videos
+- [x] Anipose - Calibration
+- [x] Anipose - Triangulate
+- [ ] Analysis Support - Testing and updating ability
+
+1. Create and label video
+    1. Create the project and hand labels the videos on your computer
+    2. Use `scp` or `rsync` to transfer the project to the workstation
+2.  
+
