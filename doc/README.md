@@ -14,73 +14,74 @@ Here are some info + terminologies for future references:
 - The shell is `bash`
 
 #### 2. Connect and setup the workstation
-##### 1. SSH into the computer using
-    ```shell
-    ssh <your username>@165.124.111.121
-    ```
-    When prompt, enter your user's password
+##### 2.1. SSH into the computer using
+```shell
+ssh <your username>@165.124.111.121
+```
+When prompt, enter your user's password
 
-##### 2. Set up in the conda environment:
-   1. Install DLC first by following the instruction here https://deeplabcut.github.io/DeepLabCut/docs/installation.html
-   2. Specifically, clone the repo and create the environment using the conda file in the clone folder.
-   3. Once done, activate the environment (`conda activate deeplabcut`)
-   4. If there is issue in activate the conda environment, use `conda init bash` 
-   5. Install anipose from pip - `pip install anipose`
-   6. (Optional - Try if bug) Install aniposelib from pip - `pip install aniposelib`
-   7. Uninstall opencv and their traces:
-      1. `pip uninstall opencv-python`
-      2. `pip uninstall opencv-python-headless`
-      3. `pip uninstall opencv-contrib-pythonY`
-   8. Re-install opencv-contrib
-   ```shell
-   pip install --no-deps --force-reinstall opencv-contrib-python==3.4.17.63
-   ```
-   9. (Optional - Try if bug) Install numba
-        `pip install numba==0.53.1`
-   10. Installation done!
-   11. TODO
-   - [ ] Create .yml file to consolidate the installation process
+##### 2.2. Set up in the conda environment:
+1. Install DLC first by following the instruction here https://deeplabcut.github.io/DeepLabCut/docs/installation.html
+2. Specifically, clone the repo and create the environment using the conda file in the clone folder.
+3. Once done, activate the environment (`conda activate deeplabcut`)
+4. If there is issue in activate the conda environment, use `conda init bash` 
+5. Install anipose from pip - `pip install anipose`
+6. (Optional - Try if bug) Install aniposelib from pip - `pip install aniposelib`
+7. Uninstall opencv and their traces:
+  1. `pip uninstall opencv-python`
+  2. `pip uninstall opencv-python-headless`
+  3. `pip uninstall opencv-contrib-pythonY`
+8. Re-install opencv-contrib
+```shell
+pip install --no-deps --force-reinstall opencv-contrib-python==3.4.17.63
+```
+9. (Optional - Try if bug) Install numba
+    `pip install numba==0.53.1`
+10. Installation done!
+11. TODO
+    - [ ] Create .yml file to consolidate the installation process
 
-##### 3. Setup the FSM resfiles
-   1. Note: To access the FSM resfile from SSH, we need to manually mount the server to the computer. After finish transferring the file, make it a good practice to unmount the directory using the command from the 4th step.
-   2. Make mounting point directory - This can be anywhere, just remember to change it to the same directory in the 3rd step
-    ```shell
-    sudo mkdir -p /resfiles
-    ```
-   3. Mount the FSM Resfiles drive 
-    ```shell
-    sudo mount -t cifs -o "username=<netID>,password=<password>,domain=fsm" //fsmresfiles.fsm.northwestern.edu/fsmresfiles/Basic_Sciences/Phys/TreschLab /resfiles
-    ```
-   4. Unmount the file system
-    ```shell
-    sudo umount -l /resfiles
-    ```
-##### 4. Transferring the files to and from the workstation
-   1. Change the current directory to where the files are currently located
-    ```shell
-    cd <original directory>
-    ```
-   2.  Move files from the current directory to the destination
-    ```shell
-    cp <file> <destination's directory>
-    ```
-      1. Can use wild card (such as `*.csv`) to select all files with the same pattern in the current directory.
-##### 5. Setup the Jupyter notebook
-   1. Notes: Follow the documentation from Anaconda
-   https://docs.anaconda.com/anaconda/user-guide/tasks/remote-jupyter-notebook/
-   2. `cd` into the folder with the target notebook
-   3. Launch the jupyter notebook server. The `PORT` number can typically be 8080.
-   ```shell
-   jupyter notebook --no-browser --port=<PORT>
-   ```
-   4. Access the notebook from your computer using the command
-   ```shell
-   ssh -L 8080:localhost:<PORT> <REMOTE_USER>@<REMOTE_HOST>
-   ```
-   PORT - The port from the above
-   REMOTE_USER - Your computer username
-   REMOTE_HOST - The IP of the computer
-   5. Navigate your browser to http://localhost:8080/ to work on the notebook
+##### 2.3. Setup the FSM resfiles
+1. Note: To access the FSM resfile from SSH, we need to manually mount the server to the computer. After finish transferring the file, make it a good practice to unmount the directory using the command from the 4th step.
+2. Make mounting point directory - This can be anywhere, just remember to change it to the same directory in the 3rd step
+```shell
+sudo mkdir -p /resfiles
+```
+3. Mount the FSM Resfiles drive 
+```shell
+sudo mount -t cifs -o "username=<netID>,password=<password>,domain=fsm" //fsmresfiles.fsm.northwestern.edu/fsmresfiles/Basic_Sciences/Phys/TreschLab /resfiles
+```
+4. Unmount the file system
+```shell
+sudo umount -l /resfiles
+```
+##### 2.4. Transferring the files to and from the workstation
+1. Change the current directory to where the files are currently located
+```shell
+cd <original directory>
+```
+2.  Move files from the current directory to the destination
+ ```shell
+ cp <file> <destination's directory>
+ ```
+   We can use wild card (such as `*.csv`) to select all files with the same pattern in the current directory.
+##### 2.5. Setup the Jupyter notebook
+1. Notes: Follow the documentation from Anaconda
+https://docs.anaconda.com/anaconda/user-guide/tasks/remote-jupyter-notebook/
+2. `cd` into the folder with the target notebook
+3. Launch the jupyter notebook server. The `PORT` number can typically be 8080.
+```shell
+jupyter notebook --no-browser --port=<PORT>
+```
+4. Access the notebook from your computer using the command
+```shell
+ssh -L 8080:localhost:<PORT> <REMOTE_USER>@<REMOTE_HOST>
+```
+PORT - The port from the above
+REMOTE_USER - Your computer username
+REMOTE_HOST - The IP of the computer
+
+5. Navigate your browser to http://localhost:8080/ to work on the notebook
 
 #### 3. Pipeline notes instructions
 Progress checklist for things tested and can do on the workstation without needing the GUI or notebook:
@@ -124,7 +125,7 @@ Progress checklist for things tested and can do on the workstation without needi
     # Create the training set
     deeplabcut.create_training_dataset(path_config_file, net_type='resnes_101', augmenter_type='imgaug')
     ```
-    This code snippet can be used either in Ipython or Notebook.
+    This code snippet can be used either in IPython or Notebook.
 4. Train the model (DLC)
    1. (Optional) If we are going to re-train a trained model with updated dataset/labels, assuming the optional package is installed, we can quickly resume the training on the said model by running this snippet
     ```python
@@ -132,7 +133,7 @@ Progress checklist for things tested and can do on the workstation without needi
     setConfig_ContinueTraining(path_config_file, additionalIteration=1000000)
     ```
 
-5. The model can be trained using this snippet
+   2. The model can be trained using this snippet
     (Assuming that the library is import and `path_config_file` is specified)
     (For the `gputouse` flag, we can properly test using multiple gpu by setting it to 2)
 
@@ -140,16 +141,16 @@ Progress checklist for things tested and can do on the workstation without needi
     deeplabcut.train_network(path_config_file, shuffle=1, displayiters=10, saveiters=500, gputouse=None
     ```
     
-6. Analyze the videos (DLC OR Anipose)
+5. Analyze the videos (DLC OR Anipose)
 We have many options for this step:
    1. Do it through Anipose's CLI to label the video. It requires some setups, but once done, the files are neatly organized for triangulation. Here are the steps:
-        1. Create the folder following the instruction on the website (https://anipose.readthedocs.io/en/latest/start2d.html)
-        2. Have you config.toml ready with the appropriate directory of the DLC project.
-        3. Move the raw videos to videos-raw
-        4. Use Anipose's CLI to analyze the videos. Specifically: 
-    ```bash
-    anipose analyze
-    ```
+       1. Create the folder following the instruction on the website (https://anipose.readthedocs.io/en/latest/start2d.html)
+       2. Have your `config.toml` ready with the appropriate directory of the DLC project.
+       3. Move the raw videos to videos-raw
+       4. Use Anipose's CLI to analyze the videos. Specifically: 
+        ```bash
+        anipose analyze
+        ```
    2. Use the DLC function with some helpers (required Analysis-Support installed, or it will be a pain). Here are the steps:
         1. Create a list of videos to be analyzed using this snippet:
         ```python
@@ -177,15 +178,15 @@ We have many options for this step:
         deeplabcut.analyze_videos(path_config_file, videoUnprocessList, videotype=VideoType, save_as_csv=True)
         deeplabcut.create_labeled_video(path_config_file, videoUnprocessList, videotype=VideoType)
         ```
-7. Calibration (Anipose)
+1. Calibration (Anipose)
     1. `cd` to the folder containing the `config.toml` file.
     2. Have the calibration videos in the `calibration` folder. It should be in the same folder as the `videos-raw``
     3. Run the CLI
     ```bash
     anipose calibration
     ```
-    1. If the calibration is successful, the `calibration` folder should have the `calibration.toml` file.
-8. Triangulation (Anipose)
+   1. If the calibration is successful, the `calibration` folder should have the `calibration.toml` file.
+2. Triangulation (Anipose)
     1. To use this step, it would be easier to run the `anipose analyze` function to analyze the `videos-raw` (going 4.1 route). Make sure the `calibration/calibration.toml` exists
     2. Run the CLI `anipose triangulate`
-9. Additional steps - follow instructions on Anipose documentation.
+3. Additional steps - follow instructions on Anipose documentation.
