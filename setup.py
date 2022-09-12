@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     # Needed for dependencies
     install_requires=['numpy',
-                      'opencv-contrib-python'],
+                      'opencv-contrib-python==3.4.17.63'],
     entry_points={  # Optional
         'console_scripts': [
             'setup_package=setup_package.setup_package:main',

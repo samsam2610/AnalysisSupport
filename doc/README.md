@@ -38,7 +38,9 @@ Here are some info + terminologies for future references:
    9. (Optional - Try if bug) Install numba
         `pip install numba==0.53.1`
    10. Installation done!
-   
+   11. TODO
+   - [ ] Create .yml file to consolidate the installation process
+
 3. Setup the FSM resfiles
    1. Note: To access the FSM resfile from SSH, we need to manually mount the server to the computer. After finish transferring the file, make it a good practice to unmount the directory using the command from the 4th step.
    2. Make mounting point directory - This can be anywhere, just remember to change it to the same directory in the 3rd step
@@ -98,5 +100,6 @@ Progress checklist for things tested and can do on the workstation without needi
 1. Create and label video
     1. Create the project and hand labels the videos on your computer
     2. Use `scp` or `rsync` to transfer the project to the workstation
-2.  
+2.  Train the model
+    1.  
 
