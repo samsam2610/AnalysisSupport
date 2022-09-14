@@ -7,6 +7,7 @@ pass_config = click.make_pass_decorator(dict)
 
 DEFAULT_CONFIG = {
     'video_extension': 'avi',
+    'nesting': 0,
     'calibration': {
         'animal_calibration': False,
         'calibration_init': None,
@@ -105,13 +106,20 @@ def load_config(fname):
 @click.pass_context
 def cli(ctx, config):
     ctx.obj = load_config(config)
+    click.echo(ctx.obj['nesting'])
 
 @cli.command()
+@click.option('--repeat', default=1, help='Number of template .')
 @pass_config
 def generate_template_folder(config):
     from analysissupport.anipose_support.config_utils import generate_template
     click.echo('Creating template of folders ...')
     generate_template(config)
+
+@cli.command()
+@pass_config
+def hello_world(config):
+    click.echo('Hello world')
 
 if __name__ == '__main__':
     cli()

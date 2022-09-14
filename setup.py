@@ -11,10 +11,12 @@ setup(
     # Needed for dependencies
     install_requires=['numpy',
                       'opencv-contrib-python==3.4.17.63',
-                      'psycopg2-binary'],
+                      'psycopg2-binary',
+                      'Click'],
     entry_points={  # Optional
         'console_scripts': [
-            'setup_package=setup_package.setup_package:main',
+            'setup_package = setup_package.setup_package:main',
+            'analysissupport = ascli:cli'
         ],
     },
 
