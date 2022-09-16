@@ -16,7 +16,8 @@ setup(
     entry_points={  # Optional
         'console_scripts': [
             'setup_package = setup_package.setup_package:main',
-            'analysissupport = ascli:cli'
+            'aniposesupport = aniposesupport:cli',
+            'dlcsupport = dlcsupport:cli',
         ],
     },
 

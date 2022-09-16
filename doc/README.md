@@ -16,7 +16,9 @@ Here are some info + terminologies for future references:
 #### 2. Connect and setup the workstation
 ##### 2.1. SSH into the computer using
 ```shell
-ssh <your username>@165.124.111.121
+# The IP address might change over time, so you might want to use the hostname u124289
+ssh <your username>@165.124.111.121 # OR
+ssh <your username>u124289.fsm.northwestern.edu
 ```
 When prompt, enter your user's password
 
@@ -24,7 +26,7 @@ When prompt, enter your user's password
 1. Install DLC first by following the instruction here https://deeplabcut.github.io/DeepLabCut/docs/installation.html
 2. Specifically, clone the repo and create the environment using the conda file in the clone folder.
 3. Once done, activate the environment (`conda activate deeplabcut`)
-4. If there is issue in activate the conda environment, use `conda init bash` 
+4. If there is issue in activating the conda environment, use `conda init bash` 
 5. Install anipose from pip - `pip install anipose`
 6. (Optional - Try if bug) Install aniposelib from pip - `pip install aniposelib`
 7. Uninstall opencv and their traces:
@@ -35,10 +37,16 @@ When prompt, enter your user's password
 ```shell
 pip install --no-deps --force-reinstall opencv-contrib-python==3.4.17.63
 ```
-9. (Optional - Try if bug) Install numba
-    `pip install numba==0.53.1`
-10. Installation done!
-11. TODO
+9. (Optional - But pretty sure you'll need this) Install CUDA supporting packages for conda. Make sure that the environment is activated
+```shell
+conda install -c conda-forge cudatoolkit=11.2 cudnn=8.1.0
+mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+```
+10. (Optional - Try if bug) Install numba
+     `pip install numba==0.53.1`
+11. Installation done!
+12. TODO
     - [ ] Create .yml file to consolidate the installation process
 
 ##### 2.3. Setup the FSM resfiles
@@ -62,10 +70,25 @@ cd <original directory>
 ```
 2.  Move files from the current directory to the destination
  ```shell
- cp <file> <destination's directory>
+ cp <file> <destination directory>
  ```
    We can use wild card (such as `*.csv`) to select all files with the same pattern in the current directory.
-##### 2.5. Setup the Jupyter notebook
+##### 2.5. Transferring between personal computer and the workstation
+There are many ways to achieve this. The first and 'primitive' way is to use `scp`. The second way involves installing 3rd party software on the personal computer. We will cover both methods in this section.
+1. `scp` is the easier method (**PuTTY** and `pscp` for Windows folks)
+```shell
+# from your computer to the workstation
+scp /PathToSourceFile/file <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/file # for single file
+scp -r /Directory <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/TargetDir # for directory/folders
+
+# from the workstation to your computer current working directory
+scp <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/file . # for file
+scp -r <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/TargetDir . # for directory
+```
+
+2. `sftp` is another option for transferring files and folder. On Windows, you can download `WinSCP` or `FileZilla` for free and use their `sftp` function. Those also come with the GUI to make the browsing and transferring processes easier. On Macos, `forklift` and `transmission` can do the same things, but they are not free.
+
+##### 2.6. Setup the Jupyter notebook
 1. Notes: Follow the documentation from Anaconda
 https://docs.anaconda.com/anaconda/user-guide/tasks/remote-jupyter-notebook/
 2. `cd` into the folder with the target notebook
@@ -86,7 +109,7 @@ REMOTE_HOST - The IP of the computer
 #### 3. Pipeline notes instructions
 Progress checklist for things tested and can do on the workstation without needing the GUI or notebook:
 - [ ] DLC - Add labeled data
-- [ ] DLC - Create training set
+- [x] DLC - Create training set
 - [x] DLC - Train model - Using IPython or notebook
   - [ ] DLC - Training from CLI
   - [ ] DLC - Auto add labeled data to train
@@ -105,7 +128,7 @@ Progress checklist for things tested and can do on the workstation without needi
 2. Create and label video (DLC)
     1. Create the project and hand labels the videos on your computer
     2. Use `scp` or `rsync` to transfer the project to the workstation
-3.  Create the training set (DLC)
+3. Create the training set (DLC)
     1. This is the tricky part. The problem is that the training directory is based on where the training set is created. If the training set was created on one machine and going to be trained on another, we must manually modify the directory of the training set.
     2. To simplify the process, it is advised that we create the training set on the same machine that is going to be used for training.
     - [ ] Test training set creation
@@ -141,7 +164,7 @@ Progress checklist for things tested and can do on the workstation without needi
     deeplabcut.train_network(path_config_file, shuffle=1, displayiters=10, saveiters=500, gputouse=None
     ```
     
-5. Analyze the videos (DLC OR Anipose)
+5. Analyze the videos (DLC **_OR_** Anipose)
 We have many options for this step:
    1. Do it through Anipose's CLI to label the video. It requires some setups, but once done, the files are neatly organized for triangulation. Here are the steps:
        1. Create the folder following the instruction on the website (https://anipose.readthedocs.io/en/latest/start2d.html)
@@ -178,7 +201,7 @@ We have many options for this step:
         deeplabcut.analyze_videos(path_config_file, videoUnprocessList, videotype=VideoType, save_as_csv=True)
         deeplabcut.create_labeled_video(path_config_file, videoUnprocessList, videotype=VideoType)
         ```
-1. Calibration (Anipose)
+6. Calibration (Anipose)
     1. `cd` to the folder containing the `config.toml` file.
     2. Have the calibration videos in the `calibration` folder. It should be in the same folder as the `videos-raw``
     3. Run the CLI
@@ -186,7 +209,13 @@ We have many options for this step:
     anipose calibration
     ```
    1. If the calibration is successful, the `calibration` folder should have the `calibration.toml` file.
-2. Triangulation (Anipose)
+7. Triangulation (Anipose)
     1. To use this step, it would be easier to run the `anipose analyze` function to analyze the `videos-raw` (going 4.1 route). Make sure the `calibration/calibration.toml` exists
     2. Run the CLI `anipose triangulate`
-3. Additional steps - follow instructions on Anipose documentation.
+8. Additional steps - follow instructions on Anipose documentation.
+
+#### 4. Tips and tricks
+1. `tmux`
+    `tmux` can be used to create multiple independent sessions. This allows us to safely detach from a running process in one session and exit the remote connection.
+2. Helpful unix commands:
+   1. 
