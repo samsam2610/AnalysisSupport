@@ -169,6 +169,24 @@ def analyze_videos(config,
                                   save_as_csv=True,)
 
 @cli.command()
+@click.option("--net_type",
+              default="resnet_101",
+              help="Select the network type. Please put that in quote or double quotes. resnet_50, resnet_50")
+@pass_config
+def create_training_dataset(config, net_type):
+    click.echo('Create new training dataset...')
+    import deeplabcut
+    deeplabcut.create_training_dataset(config=config['config-path'], net_type=net_type)
+
+@cli.command()
+@pass_config
+def train_network(config):
+    click.echo('Start training the network ...')
+    import deeplabcut
+    import tensorflow as tf
+    deeplabcut.train_network(config=config['config-path'], shuffle=1, displayiters=10, saveiters=500)
+
+@cli.command()
 @pass_config
 def hello_world(config):
     click.echo('The working config path is ')
