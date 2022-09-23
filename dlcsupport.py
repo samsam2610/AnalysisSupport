@@ -174,3 +174,5 @@ def hello_world(config):
     click.echo('The working config path is ')
     click.echo(config['config-path'])
 
+if __name__ == '__main__':
+    cli()
