@@ -39,6 +39,7 @@ class ProcessVideoList:
                 self.videoList.append(VideoData(video, videoProcessingStatus=processingStatus))
 
     def getListOfVideos(self, videos, videotype):
+
         if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
             from random import sample
 
@@ -102,7 +103,9 @@ class ProcessVideoList:
     def getListofUnprocessedVideos(self):
         return [self.videoList[i].videoPath for i in range(len(self.videoList)) if self.videoList[i].videoProcessingStatus == False]
 
-
+    def getVideoList(self):
+        print(self.videoList)
+        return self.videoList
 
                 
 

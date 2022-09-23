@@ -4,7 +4,7 @@ from skimage import io
 from skimage.util import img_as_ubyte
 import numpy as np
 import pandas as pd
-from analysissupport.dlc_support import auxiliaryfunctions
+from analysissupport.dlc_support import auxiliaryfunctions, conversioncode
 from analysissupport.dlc_support.auxfun_videos import VideoReader
 from analysissupport.dlc_support.visualization import Plotting
 
@@ -81,6 +81,7 @@ class AutoFrameExtraction:
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, videoName, self.DLCscorer, track_method=self.track_method
             )
+            conversioncode.guarantee_multiindex_rows(df)
 
             dfnew = df.filter(regex='likelihood', axis=1)
             df_filt = dfnew[dfnew>P]
@@ -93,7 +94,7 @@ class AutoFrameExtraction:
             nframes = len(cap)
             indexlength = int(np.ceil(np.log10(nframes)))
             is_valid = []
-            for index in self.frames2pick:
+            for index in frames2pick:
                 cap.set_to_frame(index)  # extract a particular frame
                 frame = cap.read_frame()
                 if frame is not None:
@@ -126,6 +127,9 @@ class AutoFrameExtraction:
     def addFrameToLabeledData(self):
         for video in self.videoUnprocessList:
             videoName = Path(video).stem
+            cap = VideoReader(video)
+            nframes = len(cap)
+            indexlength = int(np.ceil(np.log10(nframes)))
 
             # Retrive list of frames in the folder
             frames_folder = Path(video).parent.joinpath(videoName)
@@ -140,6 +144,7 @@ class AutoFrameExtraction:
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, videoName, self.DLCscorer, track_method=self.track_method
             )
+            conversioncode.guarantee_multiindex_rows(df)
 
             df_selected = df.iloc[frames2pick]
             df_selected = df_selected.drop(list(self.DataCombined.filter(regex = 'likelihood')), axis=1)
@@ -161,12 +166,14 @@ class AutoFrameExtraction:
                 df_labeled = pd.read_hdf(
                     output_file
                 )
+                
+                df_selected = pd.concat([df_selected, df_labeled])
 
-                df_selected = df_selected.combine_first(df_labeled)
-
+            conversioncode.guarantee_multiindex_rows(df_selected)
+            df_selected = df_selected[~df_selected.index.duplicated(keep="first")]
             df_selected.to_csv(
                 os.path.join(
-                    cfg["project_path"],
+                    self.cfg["project_path"],
                     "labeled-data",
                     videoName,
                     "CollectedData_" + self.HUMANscorer + ".csv",
@@ -174,20 +181,16 @@ class AutoFrameExtraction:
             )
             df_selected.to_hdf(
                 os.path.join(
-                    cfg["project_path"],
+                    self.cfg["project_path"],
                     "labeled-data",
                     videoName,
                     "CollectedData_" + self.HUMANscorer + ".h5",
                 ),
-                "df_with_missing",
-                format="table",
+                key="df_with_missing",
                 mode="w",
             )
 
             # Extract and save the frames from the frame index list
-            cap = VideoReader(video)
-            nframes = len(cap)
-            indexlength = int(np.ceil(np.log10(nframes)))
             is_valid = []
             for index in frames2pick:
                 cap.set_to_frame(index)  # extract a particular frame
@@ -207,7 +210,5 @@ class AutoFrameExtraction:
                     print("Frame", index, " not found!")
                     is_valid.append(False)
             cap.close()
-
-
 
 
