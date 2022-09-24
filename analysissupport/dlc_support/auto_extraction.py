@@ -147,7 +147,7 @@ class AutoFrameExtraction:
             conversioncode.guarantee_multiindex_rows(df)
 
             df_selected = df.iloc[frames2pick]
-            df_selected = df_selected.drop(list(self.DataCombined.filter(regex = 'likelihood')), axis=1)
+            df_selected = df_selected.drop(list(df.filter(regex = 'likelihood')), axis=1)
             df_selected.columns = df_selected.columns.set_levels([self.HUMANscorer], level='scorer')
             index = pd.Index([os.path.join("labeled-data", videoName, "img" + str(fn).zfill(indexlength) + ".png") for fn in frames2pick])
             df_selected = df_selected.set_index(index)
