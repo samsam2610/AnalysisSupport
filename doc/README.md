@@ -2,9 +2,7 @@
 This tutorial shows steps to utilize the Deep Learning workstation (Neptune) in Dr.Tresch's lab for DEEPLABCUT (DLC) + Anipose tasks
 
 #### 1. Overview - Notes
-Since the DLC + Anipose (DLCA) pipeline is still being set up, we need to perform many steps manually. The guide will be updated promptly as the pipeline evolved. 
-
-Here are some info + terminologies for future references:
+Since the DLC + Anipose (DLCA) pipeline is still being set up, we need to perform many steps manually. The guide will be updated promptly as the pipeline evolved. Here is some info + terminologies for future reference:
 - OS: Ubuntu 20.04
 - GPU: 2x Nvidia RTX 3080 Ti
 - You will need to create and set up your own conda environment to perform your tasks
@@ -18,7 +16,7 @@ Here are some info + terminologies for future references:
 ```shell
 # The IP address might change over time, so you might want to use the hostname u124289
 ssh <your username>@165.124.111.121 # OR
-ssh <your username>u124289.fsm.northwestern.edu
+ssh <your username>@u124289.fsm.northwestern.edu
 ```
 When prompt, enter your user's password
 
@@ -45,8 +43,10 @@ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFI
 ```
 10. (Optional - Try if bug) Install numba
      `pip install numba==0.53.1`
-11. Installation done!
-12. TODO
+11. (Optional - Try if bug with numpy) A newer version of numpy might cause error in Deeplabcut. If that happens, try
+    `pip install numpy<1.23`  
+12. Installation done!
+13. TODO
     - [ ] Create .yml file to consolidate the installation process
 
 ##### 2.3. Setup the FSM resfiles
@@ -55,11 +55,10 @@ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFI
 ```shell
 sudo mkdir -p /resfiles
 ```
-3. Determine your CURRENT LOCAL ID - copy the value
+3. Determine your CURRENT LOCAL ID - copy the returned value
 ```shell
 id -u
 ```
-
 4. Mount the FSM Resfiles drive 
 ```shell
 sudo mount -t cifs -o "username=<netID>,password=<password>,uid=<your current local id>,domain=fsm" //fsmresfiles.fsm.northwestern.edu/fsmresfiles/Basic_Sciences/Phys/TreschLab ~/resfiles
@@ -83,12 +82,12 @@ There are many ways to achieve this. The first and 'primitive' way is to use `sc
 1. `scp` is the easier method (**PuTTY** and `pscp` for Windows folks)
 ```shell
 # from your computer to the workstation
-scp /PathToSourceFile/file <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/file # for single file
-scp -r /Directory <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/TargetDir # for directory/folders
+scp /PathToSourceFile/file <your username>@u124289.fsm.northwestern.edu:/PathToTargetDir/file # for single file
+scp -r /Directory <your username>@u124289.fsm.northwestern.edu:/PathToTargetDir/TargetDir # for directory/folders
 
 # from the workstation to your computer current working directory
-scp <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/file . # for file
-scp -r <your username>u124289.fsm.northwestern.edu:/PathToTargetDir/TargetDir . # for directory
+scp <your username>@u124289.fsm.northwestern.edu:/PathToTargetDir/file . # for file
+scp -r <your username>@u124289.fsm.northwestern.edu:/PathToTargetDir/TargetDir . # for directory
 ```
 
 2. `sftp` is another option for transferring files and folder. On Windows, you can download `WinSCP` or `FileZilla` for free and use their `sftp` function. Those also come with the GUI to make the browsing and transferring processes easier. On Macos, `forklift` and `transmission` can do the same things, but they are not free.
@@ -222,5 +221,19 @@ We have many options for this step:
 #### 4. Tips and tricks
 1. `tmux`
     `tmux` can be used to create multiple independent sessions. This allows us to safely detach from a running process in one session and exit the remote connection.
-2. Helpful unix commands:
-   1. 
+2. `vim` bash setup
+   1. Run `nano ~/.bashrc`
+   2. Add `set -o vi` to enable vim in bash
+   3. Exit nano
+   4. run `source ~/.bashrc` to enable vim
+   5. Change the cursor in vim
+      1. Run `nano ~/.inputrc`
+      2. Add the following lines
+         ```shell
+            set editing-mode vi
+            set keymap vi
+            set show-mode-in-prompt on
+            set vi-cmd-mode-string "\1\e[2 q\2"
+            set vi-ins-mode-string "\1\e[6 q\2"
+        ```
+    
