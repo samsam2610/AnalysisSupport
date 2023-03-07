@@ -61,7 +61,7 @@ id -u
 ```
 4. Mount the FSM Resfiles drive 
 ```shell
-sudo mount -t cifs -o "username=<netID>,password=<password>,uid=<your current local id>,domain=fsm" //fsmresfiles.fsm.northwestern.edu/fsmresfiles/Basic_Sciences/Phys/TreschLab ~/resfiles
+sudo mount -t cifs -o "username=<netID>,password=<password>,uid=<your current local id, obtained from step 3>,domain=fsm" //fsmresfiles.fsm.northwestern.edu/fsmresfiles/Basic_Sciences/Phys/TreschLab ~/resfiles
 ```
 5. Unmount the file system
 ```shell
