@@ -55,14 +55,12 @@ def cli(ctx, config):
               required=True,
               default="[]",
               help="List of folders containing the videos")
+@click.option("--manual",
+              default=False,
+              help="Manual select videos to extract outliers")
 @pass_config
-def auto_extract_outlier(config, video_folder, likelihood):
+def auto_extract_outlier(config, video_folder, likelihood, manual):
     video_folder = json.loads(video_folder)
-    video_folder = video_folder[1:-1]
-    try:
-        video_folder = video_folder.split(',')
-    except ValueError:
-        pass
 
     from analysissupport.dlc_support.processing_utils import ProcessVideoList
     videoListObject = ProcessVideoList(video_folder)
@@ -71,11 +69,20 @@ def auto_extract_outlier(config, video_folder, likelihood):
     click.echo('List of videos found is: ')
     click.echo(videoUnprocessList)
 
+    if (manual is True):
+        selected_videos = []
+        for video in videoUnprocessList:
+            if click.confirm('Do you want to extract the outlier of the {}?'.format(video)):
+                selected_videos.append(video)
+
+    click.echo('List of the videos to be extracted is: ')
+    click.echo(selected_videos)
+
     if click.confirm('This will automatically extract outlier frames from your dataset. Do you want to continue?'):
         click.echo('Proceeding...')
         from analysissupport.dlc_support.auto_extraction import AutoFrameExtraction
         auto_frame_obj = AutoFrameExtraction(config=config['config-path'],
-                                             videoUnprocessList=videoUnprocessList)
+                                             videoUnprocessList=selected_videos)
         click.echo('Extracting frames ...')
         auto_frame_obj.extractFrameWithLikelihood(P=likelihood)
         click.echo('Done! Please go to the folders and check for extracted frames. Delete undersire frames from the folder before proceeding!!')

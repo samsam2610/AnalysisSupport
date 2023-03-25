@@ -9,7 +9,7 @@ setup(
     # Needed to actually package something
     packages=find_packages(),
     # Needed for dependencies
-    install_requires=['numpy',
+    install_requires=['numpy==1.19.2',
                       'opencv-contrib-python==3.4.17.63',
                       'psycopg2-binary',
                       'Click'],
