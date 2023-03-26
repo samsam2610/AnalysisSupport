@@ -157,11 +157,6 @@ def analyze_videos(config,
                    videotype):
 
     video_folder = json.loads(video_folder)
-    video_folder = video_folder[1:-1]
-    try:
-        video_folder = video_folder.split(',')
-    except ValueError:
-        pass
 
     from analysissupport.dlc_support.processing_utils import ProcessVideoList
     videoListObject = ProcessVideoList(video_folder)
@@ -170,11 +165,19 @@ def analyze_videos(config,
     click.echo('List of videos found is: ')
     click.echo(videoUnprocessList)
 
+    if (manual is True):
+        selected_videos = []
+        for video in videoUnprocessList:
+            if click.confirm('Do you want to extract the outlier of the {}?'.format(video)):
+                selected_videos.append(video)
+    else:
+        selected_videos = videoUnprocessList
+
     if click.confirm('This will analyze all the videos found in the above folders. Do you want to continue?'):
         click.echo('Proceeding...')
         import deeplabcut
         deeplabcut.analyze_videos(config=config['config-path'],
-                                  videos=videoUnprocessList,
+                                  videos=selected_videos,
                                   videotype=videotype,
                                   allow_growth=allow_growth,
                                   gputouse=gputouse,
