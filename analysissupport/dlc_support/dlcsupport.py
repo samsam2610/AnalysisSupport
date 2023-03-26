@@ -77,9 +77,6 @@ def auto_extract_outlier(config, video_folder, likelihood, manual):
     else:
         selected_videos = videoUnprocessList
         
-
-
-
     if click.confirm('This will automatically extract outlier frames from your dataset. Do you want to continue?'):
         click.echo('Proceeding...')
         from analysissupport.dlc_support.auto_extraction import AutoFrameExtraction
@@ -95,14 +92,12 @@ def auto_extract_outlier(config, video_folder, likelihood, manual):
               required=True,
               default="[]",
               help="List of folders containing the videos")
+@click.option("--manual",
+              default=False,
+              help="Manual select videos to add outliers back")
 @pass_config
-def auto_add_outliers_back(config, video_folder):
+def auto_add_outliers_back(config, video_folder, manual):
     video_folder = json.loads(video_folder)
-    video_folder = video_folder[1:-1]
-    try:
-        video_folder = video_folder.split(',')
-    except ValueError:
-        pass
 
     from analysissupport.dlc_support.processing_utils import ProcessVideoList
     videoListObject = ProcessVideoList(video_folder)
@@ -111,11 +106,19 @@ def auto_add_outliers_back(config, video_folder):
     click.echo('List of videos found is: ')
     click.echo(videoUnprocessList)
 
+    if (manual is True):
+        selected_videos = []
+        for video in videoUnprocessList:
+            if click.confirm('Do you want to extract the outlier of the {}?'.format(video)):
+                selected_videos.append(video)
+    else:
+        selected_videos = videoUnprocessList
+ 
     if click.confirm('This will automatically add outlier frames from your the folders back to the labeled data folder. Do you want to continue?'):
         click.echo('Proceeding...')
         from analysissupport.dlc_support.auto_extraction import AutoFrameExtraction
         auto_frame_obj = AutoFrameExtraction(config=config['config-path'],
-                                             videoUnprocessList=videoUnprocessList)
+                                             videoUnprocessList=selected_videos)
         click.echo('Add new frames ...')
         auto_frame_obj.addFrameToLabeledData()
 
