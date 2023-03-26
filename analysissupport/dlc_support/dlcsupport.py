@@ -75,8 +75,13 @@ def auto_extract_outlier(config, video_folder, likelihood, manual):
             if click.confirm('Do you want to extract the outlier of the {}?'.format(video)):
                 selected_videos.append(video)
 
-    click.echo('List of the videos to be extracted is: ')
-    click.echo(selected_videos)
+        click.echo('List of the videos to be extracted is: ')
+        click.echo(selected_videos)
+    else:
+        click.echo('List of the videos to be extracted is: ')
+        click.echo(videoUnprocessList) 
+
+
 
     if click.confirm('This will automatically extract outlier frames from your dataset. Do you want to continue?'):
         click.echo('Proceeding...')
