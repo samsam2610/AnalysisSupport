@@ -149,10 +149,14 @@ def set_config_continue(config, add_iter):
 @click.option("--videotype",
               default=".avi",
               help="Set the type of videos that will be analyzed")
+@click.option("--manual",
+              default=False,
+              help="Manual select videos to analyze")
 @pass_config
 def analyze_videos(config,
                    video_folder,
                    allow_growth,
+                   manual,
                    gputouse,
                    videotype):
 
